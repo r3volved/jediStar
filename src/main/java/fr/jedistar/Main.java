@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.jedistar.commands.ModsCommand;
+import fr.jedistar.utils.TerritoryBattleAssistant;
 
 public class Main {
 
@@ -92,8 +93,11 @@ public class Main {
 		logger.info("Launching bot with token -" + token + "-");
 
 		JediStarBot bot = new JediStarBot(token);
-
 		bot.connect();
 
+		logger.info("Connected");
+		
+		TerritoryBattleAssistant tba = new TerritoryBattleAssistant( "TBAssistant");
+	    tba.start();
 	}
 }
