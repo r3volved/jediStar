@@ -44,7 +44,7 @@ import fr.jedistar.StaticVars;
 import fr.jedistar.commands.SetUpCommand;
 
 public class TerritoryBattleAssistant implements Runnable {
-	
+	//wtf you piece of git
 	final static Logger logger = LoggerFactory.getLogger(SetUpCommand.class);
 
 	
