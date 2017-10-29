@@ -161,7 +161,7 @@ public class SetUpCommand implements JediStarBotCommand {
 		}
 		
 		//alert on help
-		if( params.get(0).equalsIgnoreCase("help") ) {
+		if( params.get(0).toLowerCase().equalsIgnoreCase("help") ) {
 			return new CommandAnswer(HELP, null);
 		}
 		
@@ -242,9 +242,6 @@ public class SetUpCommand implements JediStarBotCommand {
 		}
 
 		if( channel.saved && UPDATE_FLAG ) {
-
-			//ALERT WARNINGS
-			//receivedMessage.reply(MESSAGE_FLAG);
 			
 			MESSAGE_FLAG += CONFIRM_UPDATE_CHANNEL;
 			
@@ -301,6 +298,9 @@ public class SetUpCommand implements JediStarBotCommand {
 			if( channel.guildID == 0 ) {
 				return ERROR_NO_GUILD;
 			}
+			
+			logger.info( channel.webhook );
+			
 			if( channel.tbAssistant && channel.webhook == null ) {
 				return ERROR_NO_WEBHOOK;
 			}

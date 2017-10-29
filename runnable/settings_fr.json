@@ -169,7 +169,7 @@
 		
 		"commands":{
 			"base":"parametrage",
-			"guildNumber":"numeroGuilde"
+			"guildNumber":"numeroGuilde",
 			"tbAssistant":"tbAssistant",
 			"webhook":"webhook",
 			"toggleON":"actif",

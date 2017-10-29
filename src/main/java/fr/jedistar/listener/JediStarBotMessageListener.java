@@ -112,7 +112,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 	
 	public void onMessageCreate(DiscordAPI api, Message receivedMessage) {
 		
-		String messageAsString = receivedMessage.getContent().toLowerCase();
+		String messageAsString = receivedMessage.getContent();
 		
 		
 		//Si le message est vide ou ne commence pas par % : Ne rien faire.
@@ -149,8 +149,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 			return;
 		}
 		
-		insertCommandHistory(command, receivedMessage);
-		
+		insertCommandHistory(command, receivedMessage);		
 		
 		if(receivedMessage.getChannelReceiver() != null) {
 			receivedMessage.getChannelReceiver().type();
