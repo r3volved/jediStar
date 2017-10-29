@@ -7,7 +7,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -16,9 +19,11 @@ import org.slf4j.LoggerFactory;
 import com.vdurmont.emoji.EmojiManager;
 
 import de.btobastian.javacord.entities.message.Message;
+import de.btobastian.javacord.entities.message.embed.Embed;
 import de.btobastian.javacord.entities.message.impl.ImplReaction;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
+import fr.jedistar.classes.Channel;
 import fr.jedistar.formats.CommandAnswer;
 import fr.jedistar.formats.PendingAction;
 import fr.jedistar.listener.JediStarBotReactionAddListener;
@@ -33,9 +38,18 @@ public class SetUpCommand implements JediStarBotCommand {
 
 	private final String COMMAND;
 	private final String COMMAND_GUILD_NUMBER;
+	private final String COMMAND_TBASSISTANT;
+	private final String COMMAND_WEBHOOK;
+	private final String COMMAND_BOOLEAN_TRUE;
+	private final String COMMAND_BOOLEAN_FALSE;
 	
-	private final String CONFIRM_UPDATE_GUILD;
-	private final String SETUP_GUILD_OK;	
+	private final List<String> COMMANDS = new ArrayList<String>();
+	
+	private final String CONFIRM_UPDATE_CHANNEL;
+	private final String WARN_UPDATE_GUILD;
+	private final String WARN_UPDATE_TBASSISTANT;
+	private final String WARN_UPDATE_WEBHOOK;
+	private final String SETUP_CHANNEL_OK;	
 	private final String CANCEL_MESSAGE;
 	
 	private final String ERROR_MESSAGE;
@@ -43,16 +57,14 @@ public class SetUpCommand implements JediStarBotCommand {
 	private final String FORBIDDEN;
 	private final String PARAMS_NUMBER;
 	private final String NUMBER_PROBLEM;
+	private final String URL_PROBLEM;
+	private final String BOOLEAN_PROBLEM;
 	private final String ERROR_NO_CHAN;
+	private final String ERROR_NO_GUILD;
+	private final String ERROR_NO_WEBHOOK;
 	private final String SQL_ERROR;	
 	private final String NO_COMMAND_FOUND;
 	
-	//Requ�tes SQL
-	private static final String SELECT_GUILD_REQUEST = "SELECT * FROM guild WHERE channelID=?";
-	private static final String INSERT_GUILD_REQUEST = "INSERT INTO guild VALUES (?,?,?,?);";
-	private static final String UPDATE_GUILD_REQUEST = "UPDATE guild SET guildID=? WHERE channelID=?;";
-
-
 	//Nom des champs JSON
 	private final static String JSON_ERROR_MESSAGE = "errorMessage";
 
@@ -63,17 +75,29 @@ public class SetUpCommand implements JediStarBotCommand {
 	private static final String JSON_SETUP_COMMANDS = "commands";
 	private static final String JSON_SETUP_COMMANDS_BASE = "base";
 	private static final String JSON_SETUP_COMMANDS_GUILD_NUMBER = "guildNumber";
+	private static final String JSON_SETUP_COMMANDS_TBASSISTANT = "tbAssistant";
+	private static final String JSON_SETUP_COMMANDS_WEBHOOK = "webhook";
+	private static final String JSON_SETUP_COMMANDS_BOOLEAN_TRUE = "toggleON";
+	private static final String JSON_SETUP_COMMANDS_BOOLEAN_FALSE = "toggleOFF";
+	
 	
 	private static final String JSON_SETUP_MESSAGES = "messages";
-	private static final String JSON_SETUP_MESSAGES_CONFIRM_UPDATE_GUILD = "confirmUpdateGuild";
-	private static final String JSON_SETUP_MESSAGES_GUILD_SETUP_OK = "guildSetupOK";
+	private static final String JSON_SETUP_MESSAGES_CONFIRM_UPDATE_CHANNEL = "confirmUpdateChannel";
+	private static final String JSON_SETUP_MESSAGES_WARN_UPDATE_GUILD = "warnUpdateGuild";
+	private static final String JSON_SETUP_MESSAGES_WARN_UPDATE_WEBHOOK = "warnUpdateWebhook";
+	private static final String JSON_SETUP_MESSAGES_WARN_UPDATE_TBASSISTANT = "warnUpdateTBAssistant";
+	private static final String JSON_SETUP_MESSAGES_CHANNEL_SETUP_OK = "channelSetupOK";
 	private static final String JSON_SETUP_MESSAGES_CANCEL = "cancelAction";
 	
 	private static final String JSON_SETUP_ERROR_MESSAGES = "errorMessages";
 	private static final String JSON_SETUP_ERROR_MESSAGES_FORBIDDEN = "forbidden";
 	private static final String JSON_SETUP_ERROR_MESSAGES_PARAMS_NUMBER = "paramsNummber";
 	private static final String JSON_SETUP_ERROR_MESSAGES_INCORRECT_NUMBER = "incorrectNumber";
+	private static final String JSON_SETUP_ERROR_MESSAGES_INCORRECT_URL = "incorrectURL";
+	private static final String JSON_SETUP_ERROR_MESSAGES_INCORRECT_BOOLEAN = "incorrectBoolean";
 	private static final String JSON_SETUP_ERROR_NO_CHAN = "noChannel";
+	private static final String JSON_SETUP_ERROR_NO_GUILD = "noGuild";
+	private static final String JSON_SETUP_ERROR_NO_WEBHOOK = "noWebhook";
 	private static final String JSON_SETUP_ERROR_SQL = "sqlError";
 	private static final String JSON_SETUP_ERROR_NO_COMMAND = "noCommandFound";
 
@@ -91,17 +115,33 @@ public class SetUpCommand implements JediStarBotCommand {
 		JSONObject commands = setupParams.getJSONObject(JSON_SETUP_COMMANDS);		
 		COMMAND = commands.getString(JSON_SETUP_COMMANDS_BASE);
 		COMMAND_GUILD_NUMBER = commands.getString(JSON_SETUP_COMMANDS_GUILD_NUMBER);
+		COMMAND_TBASSISTANT = commands.getString(JSON_SETUP_COMMANDS_TBASSISTANT);
+		COMMAND_WEBHOOK = commands.getString(JSON_SETUP_COMMANDS_WEBHOOK);
+		COMMAND_BOOLEAN_TRUE = commands.getString(JSON_SETUP_COMMANDS_BOOLEAN_TRUE);
+		COMMAND_BOOLEAN_FALSE = commands.getString(JSON_SETUP_COMMANDS_BOOLEAN_FALSE);
+		
+		COMMANDS.add( COMMAND_GUILD_NUMBER.toLowerCase() );
+		COMMANDS.add( COMMAND_TBASSISTANT.toLowerCase() );
+		COMMANDS.add( COMMAND_WEBHOOK.toLowerCase() );
+		COMMANDS.add( HELP.toLowerCase() );
 		
 		JSONObject messages = setupParams.getJSONObject(JSON_SETUP_MESSAGES);
-		CONFIRM_UPDATE_GUILD = messages.getString(JSON_SETUP_MESSAGES_CONFIRM_UPDATE_GUILD);
-		SETUP_GUILD_OK = messages.getString(JSON_SETUP_MESSAGES_GUILD_SETUP_OK);
+		CONFIRM_UPDATE_CHANNEL = messages.getString(JSON_SETUP_MESSAGES_CONFIRM_UPDATE_CHANNEL);
+		WARN_UPDATE_GUILD = messages.getString(JSON_SETUP_MESSAGES_WARN_UPDATE_GUILD);
+		WARN_UPDATE_TBASSISTANT = messages.getString(JSON_SETUP_MESSAGES_WARN_UPDATE_TBASSISTANT);
+		WARN_UPDATE_WEBHOOK = messages.getString(JSON_SETUP_MESSAGES_WARN_UPDATE_WEBHOOK);
+		SETUP_CHANNEL_OK = messages.getString(JSON_SETUP_MESSAGES_CHANNEL_SETUP_OK);
 		CANCEL_MESSAGE = messages.getString(JSON_SETUP_MESSAGES_CANCEL);
 		
 		JSONObject errorMessages = setupParams.getJSONObject(JSON_SETUP_ERROR_MESSAGES);
 		FORBIDDEN = errorMessages.getString(JSON_SETUP_ERROR_MESSAGES_FORBIDDEN);
 		PARAMS_NUMBER = errorMessages.getString(JSON_SETUP_ERROR_MESSAGES_PARAMS_NUMBER);
 		NUMBER_PROBLEM = errorMessages.getString(JSON_SETUP_ERROR_MESSAGES_INCORRECT_NUMBER);
+		URL_PROBLEM = errorMessages.getString(JSON_SETUP_ERROR_MESSAGES_INCORRECT_URL);
+		BOOLEAN_PROBLEM = errorMessages.getString(JSON_SETUP_ERROR_MESSAGES_INCORRECT_BOOLEAN);
 		ERROR_NO_CHAN = errorMessages.getString(JSON_SETUP_ERROR_NO_CHAN);
+		ERROR_NO_GUILD = errorMessages.getString(JSON_SETUP_ERROR_NO_GUILD);
+		ERROR_NO_WEBHOOK = errorMessages.getString(JSON_SETUP_ERROR_NO_WEBHOOK);
 		SQL_ERROR = errorMessages.getString(JSON_SETUP_ERROR_SQL);
 		NO_COMMAND_FOUND = errorMessages.getString(JSON_SETUP_ERROR_NO_COMMAND);
 	}
@@ -115,163 +155,139 @@ public class SetUpCommand implements JediStarBotCommand {
 	@Override
 	public CommandAnswer answer(List<String> params, Message receivedMessage, boolean isAdmin) {
 
+		//Kick out if not admin
 		if(!isAdmin) {
 			return new CommandAnswer(FORBIDDEN, null);
 		}
 		
-		if(params.size() < 2) {
+		//alert on help
+		if( params.get(0).equalsIgnoreCase("help") ) {
+			return new CommandAnswer(HELP, null);
+		}
+		
+		//Kick out if not enough params
+		if(params.size() < 2  || params.size() % 2 > 0) {
 			return new CommandAnswer(PARAMS_NUMBER,null);
 		}
+
+		//Kick out if DM
+		if(receivedMessage.getChannelReceiver() == null) {
+			return new CommandAnswer(ERROR_NO_CHAN, null);
+		}
+
+		Channel channel = new Channel(receivedMessage.getChannelReceiver().getId());
+		boolean UPDATE_FLAG = false;
+		String MESSAGE_FLAG = "";
 		
-		if(COMMAND_GUILD_NUMBER.equalsIgnoreCase(params.get(0))) {
+		for( Integer p = 0; p != params.size(); ++p ) {
+		
+			String cmdParam = params.get(p).toLowerCase();
+			String cmdVal = params.get( ++p );
 			
-			if(receivedMessage.getChannelReceiver() == null) {
-				return new CommandAnswer(ERROR_NO_CHAN, null);
+			if( !COMMANDS.contains(cmdParam) ) {
+				return new CommandAnswer(error(NO_COMMAND_FOUND),null);	
 			}
-			try {
-				Integer guildID = Integer.parseInt(params.get(1));
+			
+			if( cmdParam.equalsIgnoreCase(COMMAND_GUILD_NUMBER) ) {
 				
-				return registerNewGuild(receivedMessage,guildID);
-			}
-			catch(NumberFormatException e) {
-				logger.warn(e.getMessage());
-				e.printStackTrace();
-				return new CommandAnswer(error(NUMBER_PROBLEM), null);
-			}
-		}
-		
-		
-		return new CommandAnswer(error(NO_COMMAND_FOUND),null);
-		
-	}
+				try {
+					Integer guildID = Integer.parseInt(cmdVal);
+					if( channel.guildID != guildID ) {
 
-	/**
-	 * Registers a new guild inside the database.
-	 * @param serverID
-	 * @param guildID
-	 * @param receivedMessage
-	 * @return
-	 */
-	private CommandAnswer registerNewGuild(Message receivedMessage,Integer guildID) {
+						MESSAGE_FLAG += String.format(WARN_UPDATE_GUILD,channel.guildID);
+						UPDATE_FLAG = true;						
 
-		String channelID = receivedMessage.getChannelReceiver().getId();
-		Integer existingGuildID = checkIfChannelExists(channelID);
-		
-		//Erreur SQL
-		if(existingGuildID != null && existingGuildID == -1) {
-			return new CommandAnswer(SQL_ERROR, null);
-		}
-		
-		//Guilde existante, on affiche un avertissement
-		if(existingGuildID != null && existingGuildID > 0) {
-			
-			if(existingGuildID.equals(guildID)) {
-				return new CommandAnswer(SETUP_GUILD_OK,null);
+						channel.guildID = guildID;
+						
+					}
+				}
+				catch(NumberFormatException e) {
+					logger.warn(e.getMessage());
+					e.printStackTrace();
+					return new CommandAnswer(error(NUMBER_PROBLEM), null);
+				}
 			}
 			
-			JediStarBotReactionAddListener.addPendingAction(new PendingAction(receivedMessage.getAuthor(),"executeUpdate",this,receivedMessage,1,channelID,guildID));
+			if( cmdParam.equalsIgnoreCase(COMMAND_TBASSISTANT) ) {
+				
+				if( !cmdVal.equalsIgnoreCase(COMMAND_BOOLEAN_TRUE) && !cmdVal.equalsIgnoreCase(COMMAND_BOOLEAN_FALSE) ) {
+					return new CommandAnswer(String.format(BOOLEAN_PROBLEM, COMMAND_BOOLEAN_TRUE, COMMAND_BOOLEAN_FALSE), null);
+				}
+				
+				 
+				boolean newTBA = cmdVal.equalsIgnoreCase(COMMAND_BOOLEAN_TRUE) ? true : false;
+				if( channel.tbAssistant != newTBA ) {
+					
+					MESSAGE_FLAG += WARN_UPDATE_TBASSISTANT;
+					UPDATE_FLAG = true;
+
+					channel.tbAssistant = newTBA;
+
+				}
+				
+			}
+	
+			if( cmdParam.equalsIgnoreCase(COMMAND_WEBHOOK) ) {
+		
+				String newWH = cmdVal.equalsIgnoreCase("null") ? null : cmdVal;
+				if( channel.webhook != newWH ) {
+					
+					MESSAGE_FLAG += String.format(WARN_UPDATE_WEBHOOK);
+					UPDATE_FLAG = true;
+
+					channel.webhook = newWH;
+
+				}
+			}
+		}
+
+		if( channel.saved && UPDATE_FLAG ) {
+
+			//ALERT WARNINGS
+			//receivedMessage.reply(MESSAGE_FLAG);
+			
+			MESSAGE_FLAG += CONFIRM_UPDATE_CHANNEL;
+			
+			//ALERT UPDATE CONFIRMATION
+			JediStarBotReactionAddListener.addPendingAction(new PendingAction(receivedMessage.getAuthor(),"executeUpdate",this,receivedMessage,1,channel));
 			String emojiX = EmojiManager.getForAlias("x").getUnicode();
 			String emojiV = EmojiManager.getForAlias("white_check_mark").getUnicode();
+	
+			return new CommandAnswer(String.format(MESSAGE_FLAG),null,emojiV,emojiX);						
 
-			return new CommandAnswer(String.format(CONFIRM_UPDATE_GUILD,existingGuildID),null,emojiV,emojiX);
 		}
 		
-		Connection conn = null;
-		PreparedStatement stmt = null;
+		return new CommandAnswer(executeInsert(channel),null);
 		
-		try {
-			//Guilde inexistante, on l'ins�re
-			if(existingGuildID == null) {
-				conn = StaticVars.getJdbcConnection();
-				stmt = conn.prepareStatement(INSERT_GUILD_REQUEST);
-				
-				stmt.setString(1, channelID);
-				stmt.setInt(2, guildID);
-				stmt.setBoolean(3, false);
-				stmt.setString(4, null);
-				
-				logger.debug("Executing query : "+stmt.toString());
-				stmt.executeUpdate();
-				
-				return new CommandAnswer(SETUP_GUILD_OK,null);
-			}
-		}
-		catch(SQLException e) {
-			logger.error(e.getMessage());
-			e.printStackTrace();
-			return new CommandAnswer(SQL_ERROR,null);
-		}
-		finally {
-			if(stmt != null) {
-				try {
-					stmt.close();
-				} catch (SQLException e) {
-					logger.error(e.getMessage());
-				}
-			}
-		}
-		
-		return null;
 	}
 
 	/**
-	 * Checks in the databse if data already exist for this server
+	 * Inserts the channel
 	 * @param serverID
+	 * @param channel
 	 * @return
 	 */
-	private Integer checkIfChannelExists(String channelID) {
+	public String executeInsert(Channel channel) {
+
+		if( channel.guildID == 0 ) {
+			return ERROR_NO_GUILD;
+		}
+		if( channel.tbAssistant && channel.webhook == null ) {
+			return ERROR_NO_WEBHOOK;
+		}
 		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
+		return channel.saveChannel() ? SETUP_CHANNEL_OK : SQL_ERROR;
 		
-		try {
-			conn = StaticVars.getJdbcConnection();
-
-			stmt = conn.prepareStatement(SELECT_GUILD_REQUEST);
-			
-			stmt.setString(1,channelID);
-			
-			logger.debug("Executing query : "+stmt.toString());
-			rs = stmt.executeQuery();
-			
-			if(rs.next()) {
-				return rs.getInt("guildID");
-			}
-			else {
-				return null;
-			}
-		}
-		catch(SQLException e) {
-			logger.error(e.getMessage());
-			return -1;
-		}
-		finally {
-
-			try {
-				if(rs != null) {
-					rs.close();
-				}
-				
-				if(stmt != null) {
-					stmt.close();
-				}
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-				logger.error(e.getMessage());
-			}
-
-		}
 	}
 	
+	
 	/**
-	 * Executes an update query on the database
+	 * Updates the channel
 	 * @param serverID
-	 * @param guildID
+	 * @param channel
 	 * @return
 	 */
-	public String executeUpdate(ImplReaction reaction,String channelID,Integer guildID) {
+	public String executeUpdate(ImplReaction reaction,Channel channel) {
 
 		String emojiX = EmojiManager.getForAlias("x").getUnicode();
 		String emojiV = EmojiManager.getForAlias("white_check_mark").getUnicode();
@@ -281,41 +297,24 @@ public class SetUpCommand implements JediStarBotCommand {
 		}
 
 		if(emojiV.equals(reaction.getUnicodeEmoji())) {
-			Connection conn = null;
-			PreparedStatement stmt = null;
 
-			try {
-				conn = StaticVars.getJdbcConnection();
-
-				stmt = conn.prepareStatement(UPDATE_GUILD_REQUEST);
-
-				stmt.setInt(1, guildID);
-				stmt.setString(2, channelID);
-
-				logger.debug("Executing query : "+stmt.toString());
-				stmt.executeUpdate();
-
-				return SETUP_GUILD_OK;
+			if( channel.guildID == 0 ) {
+				return ERROR_NO_GUILD;
 			}
-			catch(SQLException e) {
-				logger.error(e.getMessage());
-				e.printStackTrace();
-				return SQL_ERROR;
+			if( channel.tbAssistant && channel.webhook == null ) {
+				return ERROR_NO_WEBHOOK;
 			}
-			finally {
-				if(stmt != null) {
-					try {
-						stmt.close();
-					} catch (SQLException e) {
-						logger.error(e.getMessage());
-					}
-				}
-			}
+			
+			return channel.saveChannel() ? SETUP_CHANNEL_OK : SQL_ERROR;
+		
 		}
+		
 		return null;
 	}
 	
 	private String error(String message) {
 		return ERROR_MESSAGE +"**"+ message + "**\r\n\r\n"+ HELP;
 	}
+	
+	
 }

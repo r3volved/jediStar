@@ -170,13 +170,20 @@
 		"commands":{
 			"base":"parametrage",
 			"guildNumber":"numeroGuilde"
+			"tbAssistant":"tbAssistant",
+			"webhook":"webhook",
+			"toggleON":"actif",
+			"toggleOFF":"inactif"
 		},
 		
-		"help":"Cette commande vous permet de paramétrer le bot.\r\nCommandes possibles :\r\n%parametrage numeroGuilde XXX\r\nVous trouverez votre numéro de guilde sur swgoh.gg, dans l'adresse de votre page de guilde.",
+		"help":"Cette commande vous permet de paramétrer le bot.\r\nCommandes possibles:\r\n> %parametrage\r\n\r\nCommandes possibles:\r\n> numeroGuilde <XXX>\r\n> tbAssistant <actif|inactif>\r\n> webhook <channelWebhookURL>\r\n\r\nVous trouverez votre numéro de guilde sur swgoh.gg, dans l'adresse de votre page de guilde.",
 		
 		"messages":{
-			"confirmUpdateGuild":"Ce salon Discord est déjà associé avec l'id de guilde %d, êtes-vous sûr de vouloir changer l'association ?",
-			"guildSetupOK":"Configuration du numéro de guilde réussie",
+			"confirmUpdateChannel":"êtes-vous sûr de vouloir changer l'association ?",
+			"warnUpdateGuild":"**Ce salon Discord est déjà associé avec l'id de guilde %d ** \r\n",
+			"warnUpdateTBAssistant":"**Toggling the Territory Battle Assistant will deactivate it in all your other guild channels ** \r\n",
+			"warnUpdateWebhook":"**This Discord channel already has a webhook ** \r\n",
+			"channelSetupOK":"Configuration du salon réussie",
 			"cancelAction":"OK, j'annule la demande."
 		},
 		
@@ -184,7 +191,11 @@
 			"forbidden":"Vous n'avez pas le droit d'exécuter cette commande.\r\nVous devez faire partie du groupe Discord «botadmins» pour administrer le bot.",
 			"paramsNummber":"Pas suffisamment de paramètres",
 			"incorrectNumber":"Le nombre entré n'a pas été reconnu correctement",
+			"incorrectURL":"The webhook you typed wasn't recognized correctly",
+			"incorrectBoolean":"Territory Battle Assistant can be toggled with **%s** and **%s**",
 			"noChannel":"Cette commande doit être appelée depuis un serveur (pas de MP)",
+			"noGuild":"There is no guild registered with this channel",
+			"noWebhook":"Territory Battle Assistant requires a webhook",
 			"sqlError":"Une erreur est survenue lors de l'accès à la base de données",
 			"noCommandFound":"Commande non reconnue"
 		}
