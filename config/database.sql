@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS guild
 (
 	channelID VARCHAR(50) PRIMARY KEY,
 	guildID INT NOT NULL,
-	tbAssistant BOOLEAN DEFAUL 0,
+	tbAssistant BOOLEAN DEFAULT 0,
 	webhook VARCHAR(128)
 );
 
@@ -20,6 +20,19 @@ CREATE TABLE IF NOT EXISTS tbEventLog
 	date TIMESTAMP NOT NULL,
 	phase INT NOT NULL,
 	tbName VARCHAR(32) NOT NULL 
+);
+
+CREATE TABLE IF NOT EXISTS tbTerritoryLog
+(
+	id INT NOT NULL,
+	territoryID VARCHAR(4) NOT NULL,
+	guildID INT NOT NULL,
+	phase INT NOT NULL,
+	CM1 TEXT NULL,
+	CM2 TEXT NULL,
+	SM1 TEXT NULL,
+	Platoons TEXT NULL,
+	PRIMARY KEY( id, territoryID, guildID )
 );
 
 CREATE TABLE IF NOT EXISTS characters
@@ -77,26 +90,26 @@ CREATE TABLE IF NOT EXISTS territoryData (
   tbName VARCHAR(32) DEFAULT NULL,
   phase INT(11) DEFAULT NULL,
   combatType INT(11) DEFAULT NULL,
-  starPoINTs1 INT(11) DEFAULT NULL,
-  starPoINTs2 INT(11) DEFAULT NULL,
-  starPoINTs3 INT(11) DEFAULT NULL,
+  starPoints1 INT(11) DEFAULT NULL,
+  starPoints2 INT(11) DEFAULT NULL,
+  starPoints3 INT(11) DEFAULT NULL,
   ability VARCHAR(64) DEFAULT NULL,
   affectedTerritories VARCHAR(32) DEFAULT NULL,
   requiredUnits VARCHAR(64) DEFAULT NULL,
   specialMission VARCHAR(32) DEFAULT NULL,
   combatMissions INT(11) DEFAULT NULL,
-  missionPoINTs1 INT(11) DEFAULT NULL,
-  missionPoINTs2 INT(11) DEFAULT NULL,
-  missionPoINTs3 INT(11) DEFAULT NULL,
-  missionPoINTs4 INT(11) DEFAULT NULL,
-  missionPoINTs5 INT(11) DEFAULT NULL,
-  missionPoINTs6 INT(11) DEFAULT NULL,
-  platoonPoINTs1 INT(11) DEFAULT NULL,
-  platoonPoINTs2 INT(11) DEFAULT NULL,
-  platoonPoINTs3 INT(11) DEFAULT NULL,
-  platoonPoINTs4 INT(11) DEFAULT NULL,
-  platoonPoINTs5 INT(11) DEFAULT NULL,
-  platoonPoINTs6 INT(11) DEFAULT NULL,
+  missionPoints1 INT(11) DEFAULT NULL,
+  missionPoints2 INT(11) DEFAULT NULL,
+  missionPoints3 INT(11) DEFAULT NULL,
+  missionPoints4 INT(11) DEFAULT NULL,
+  missionPoints5 INT(11) DEFAULT NULL,
+  missionPoints6 INT(11) DEFAULT NULL,
+  platoonPoints1 INT(11) DEFAULT NULL,
+  platoonPoints2 INT(11) DEFAULT NULL,
+  platoonPoints3 INT(11) DEFAULT NULL,
+  platoonPoints4 INT(11) DEFAULT NULL,
+  platoonPoints5 INT(11) DEFAULT NULL,
+  platoonPoints6 INT(11) DEFAULT NULL,
   minDeployStar1 INT(11) DEFAULT NULL,
   minDeployStar2 INT(11) DEFAULT NULL,
   minDeployStar3 INT(11) DEFAULT NULL,
@@ -106,7 +119,11 @@ CREATE TABLE IF NOT EXISTS territoryData (
 );
 
 
-INSERT INTO `territoryData` (`territoryID`, `territoryName`, `tbName`, `phase`, `combatType`, `starPoints1`, `starPoints2`, `starPoints3`, `ability`, `affectedTerritories`, `requiredUnits`, `specialMission`, `combatMissions`, `missionPoints1`, `missionPoints2`, `missionPoints3`, `missionPoints4`, `missionPoints5`, `missionPoints6`, `platoonPoints1`, `platoonPoints2`, `platoonPoints3`, `platoonPoints4`, `platoonPoints5`, `platoonPoints6`, `minDeployStar1`, `minDeployStar2`, `minDeployStar3`, `minGPStar3`, `notes`) VALUES
+INSERT INTO tbEventLog (id, date, phase, tbName) VALUES 
+('1', '2017-10-23 17:00:00', '0', 'Hoth - Imperial Invasion'),
+('2', '2017-11-02 17:00:00', '0', 'Hoth - Imperial Invasion');
+
+INSERT INTO territoryData (territoryID, territoryName, tbName, phase, combatType, starPoints1, starPoints2, starPoints3, ability, affectedTerritories, requiredUnits, specialMission, combatMissions, missionPoints1, missionPoints2, missionPoints3, missionPoints4, missionPoints5, missionPoints6, platoonPoints1, platoonPoints2, platoonPoints3, platoonPoints4, platoonPoints5, platoonPoints6, minDeployStar1, minDeployStar2, minDeployStar3, minGPStar3, notes) VALUES
 ('HO1A', 'Rebel Base', 'Hoth - Imperial Invasion', 1, 1, 885000, 6580000, 45600000, 'Rebel Guerilla Strike', 'HO2A:HO2B', 'Phoenix', '7 Guild Event Tokens', 2, 24000, 51000, 91000, 144000, 211000, 291000, 100000, 100000, 100000, 100000, 150000, 150000, -2215000, 3480000, 42500000, 42500000, null),
 ('HO2A', 'Ion Cannon', 'Hoth - Imperial Invasion', 2, 2, 1900000, 19800000, 55000000, 'Ion Cannon Blast', 'HO3A:HO4A:HO5A', 'Rebels:HRSoldier', null, 2, 43000, 72000, 115000, 172000, 243000, 329000, 120000, 120000, 120000, 120000, 180000, 180000, -3240000, 14660000, 49860000, 90670000, 'These platoons affect the next 3 ship territories! In order to maximize star count everyone will require the ion cannon during thier ship battles.'),
 ('HO2B', 'Overlook', 'Hoth - Imperial Invasion', 2, 1, 1900000, 15400000, 43800000, 'Rebel Supply Lines', 'HO3B:HO3C', 'Rogue One', '8 Guild Event Tokens', 1, 43000, 72000, 115000, 172000, 243000, 329000, 120000, 120000, 120000, 120000, 180000, 180000, -1090000, 12410000, 40810000, 0, null),

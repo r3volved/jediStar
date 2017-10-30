@@ -6,10 +6,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -21,6 +24,8 @@ import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
+import fr.jedistar.classes.TBEventLog;
+import fr.jedistar.classes.Territory;
 import fr.jedistar.commands.helper.GalaticPowerToStars;
 import fr.jedistar.formats.CommandAnswer;
 import fr.jedistar.utils.GuildUnitsSWGOHGGDataParser;
@@ -34,6 +39,8 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final String COMMAND_CHARS;
 	private final String COMMAND_SHIPS;
 	private final String COMMAND_STRATEGY;
+	private final String COMMAND_INFO;
+	private final String COMMAND_LOG;
 
 	private final String HELP;
 
@@ -45,11 +52,14 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final String ERROR_MESSAGE;
 	private final String ERROR_MESSAGE_SQL;
 	private final String ERROR_MESSAGE_NO_CHANNEL;
+	private final String ERROR_MESSAGE_NO_TERRITORY;
 	private final String ERROR_MESSAGE_NO_GUILD_NUMBER;
+	private final String ERROR_MESSAGE_BAD_PHASE;
 	private final String ERROR_MESSAGE_PARAMS_NUMBER;
 	private final String ERROR_COMMAND;
 	private final String ERROR_INCORRECT_NUMBER;
 	private final String ERROR_DB_UPDATE;
+	private final String ERROR_NO_CURRENT_TB;
 	private final String TOO_MUCH_RESULTS;
 
 	private final static String SQL_GUILD_ID = "SELECT guildID FROM guild WHERE channelID=?;";
@@ -58,6 +68,8 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final static String SQL_COUNT_GUILD_UNITS = "SELECT COUNT(*) as count FROM guildUnits WHERE guildID=? AND charID=? AND rarity>=?";
 	private final static String SQL_SUM_GUILD_UNITS_GP ="SELECT SUM(u.power) as sumGP FROM guildUnits u INNER JOIN characters c ON (c.baseID=u.charID) WHERE guildID=?";
 	private final static String SQL_SUM_GUILD_SHIPS_GP = "SELECT SUM(u.power) as sumGP FROM guildUnits u INNER JOIN ships s ON (s.baseID=u.charID) WHERE guildID=?";
+	private final static String SQL_FIND_ALL_TERRITORIES = "SELECT * FROM territoryData WHERE territoryID=? OR territoryName LIKE ?";
+	private final static String SQL_FIND_ALL_TERRITORIES_BY_PHASE = "SELECT * FROM territoryData WHERE phase=?";
 	
 	private final static String CHAR_MODE = "characters";
 	private final static String SHIP_MODE = "ships";
@@ -79,7 +91,9 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final static String JSON_TB_COMMANDS_CHARS = "characters";
 	private final static String JSON_TB_COMMANDS_SHIPS = "ships";
 	private final static String JSON_TB_COMMANDS_STRATEGY = "strategy";
-	
+	private final static String JSON_TB_COMMANDS_INFO = "info";
+	private final static String JSON_TB_COMMANDS_LOG = "log";
+			
 	private final static String JSON_TB_MESSAGES = "messages";
 	private final static String JSON_TB_MESSAGES_DISPLAYED_RESULTS = "displayedResults";
 	private final static String JSON_TB_MESSAGES_NO_UNTI_FOUND = "noUnitFound";
@@ -89,11 +103,14 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final static String JSON_TB_ERROR_MESSAGES = "errorMessages";
 	private final static String JSON_TB_ERROR_MESSAGES_SQL = "sqlError";
 	private final static String JSON_TB_ERROR_MESSAGES_NO_CHANNEL = "noChannel";
+	private final static String JSON_TB_ERROR_MESSAGES_NO_TERRITORY = "noTerritory";
 	private final static String JSON_TB_ERROR_MESSAGES_NO_GUILD = "noGuildNumber";
+	private final static String JSON_TB_ERROR_MESSAGES_BAD_PHASE = "badPhase";
 	private final static String JSON_TB_ERROR_MESSAGES_PARAMS_NUMBER = "paramsNumber";
 	private final static String JSON_TB_ERROR_MESSAGES_COMMAND = "commandError";
 	private final static String JSON_TB_ERROR_MESSAGES_INCORRECT_NUMBER = "incorrectNumber";
 	private final static String JSON_TB_ERROR_MESSAGES_DB_UPDATE = "dbUpdateError";
+	private final static String JSON_TB_ERROR_MESSAGES_NO_CURRENT_TB = "dbNoCurrentTB";
 	private final static String JSON_TB_TOO_MUCH_RESULTS = "tooMuchResults";
 
 	public TerritoryBattlesCommand() {
@@ -112,6 +129,9 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		COMMAND_CHARS = commands.getString(JSON_TB_COMMANDS_CHARS);
 		COMMAND_SHIPS = commands.getString(JSON_TB_COMMANDS_SHIPS);
 		COMMAND_STRATEGY = commands.getString(JSON_TB_COMMANDS_STRATEGY);
+		COMMAND_INFO = commands.getString(JSON_TB_COMMANDS_INFO);
+		COMMAND_LOG = commands.getString(JSON_TB_COMMANDS_LOG);
+				
 
 		JSONObject messages = tbParams.getJSONObject(JSON_TB_MESSAGES);
 		DISPLAYED_RESULTS = messages.getString(JSON_TB_MESSAGES_DISPLAYED_RESULTS);
@@ -122,11 +142,14 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		JSONObject errorMessages = tbParams.getJSONObject(JSON_TB_ERROR_MESSAGES);
 		ERROR_MESSAGE_SQL = errorMessages.getString(JSON_TB_ERROR_MESSAGES_SQL);
 		ERROR_MESSAGE_NO_CHANNEL = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_CHANNEL);
+		ERROR_MESSAGE_NO_TERRITORY = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_TERRITORY);
 		ERROR_MESSAGE_NO_GUILD_NUMBER = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_GUILD);
+		ERROR_MESSAGE_BAD_PHASE = errorMessages.getString(JSON_TB_ERROR_MESSAGES_BAD_PHASE);
 		ERROR_MESSAGE_PARAMS_NUMBER = errorMessages.getString(JSON_TB_ERROR_MESSAGES_PARAMS_NUMBER);
 		ERROR_COMMAND = errorMessages.getString(JSON_TB_ERROR_MESSAGES_COMMAND);
 		ERROR_INCORRECT_NUMBER = errorMessages.getString(JSON_TB_ERROR_MESSAGES_INCORRECT_NUMBER);
 		ERROR_DB_UPDATE = errorMessages.getString(JSON_TB_ERROR_MESSAGES_DB_UPDATE);
+		ERROR_NO_CURRENT_TB = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_CURRENT_TB);
 		TOO_MUCH_RESULTS = errorMessages.getString(JSON_TB_TOO_MUCH_RESULTS);
 	}
 
@@ -142,7 +165,7 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 			return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
 		}
 		
-		if(COMMAND_STRATEGY.equals(params.get(0))) {
+		if(COMMAND_STRATEGY.equalsIgnoreCase(params.get(0))) {
 			
 			if(params.size() !=  1) {
 				return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
@@ -178,18 +201,125 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 			}
 			catch(NumberFormatException e) {
 				return new CommandAnswer("Invalid number",null);
-			}
-		
-			
+			}			
 
 		}
 		
+		
+		if(params.size() < 2) {
+			return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
+		}
+		
+		
+		/**
+		 * INFO COMMAND - get territory info by ID, name or phase
+		 * %tb info HO3A
+		 * %tb info Overlook
+		 * %tb info phase 4
+		 */
+		if(COMMAND_INFO.equalsIgnoreCase(params.get(0))) {
+						
+			if(receivedMessage.getChannelReceiver() == null) {
+				return new CommandAnswer(ERROR_MESSAGE_NO_CHANNEL,null);
+			}
 			
+			List<Territory> terrMatches = new ArrayList<Territory>();
+			String name = params.get(1);
+			
+			if( name.equalsIgnoreCase("phase") ) {
+				
+				if(params.size() < 3) {
+					return new CommandAnswer(ERROR_MESSAGE_BAD_PHASE,null);
+				}
+				
+				Integer phase = Integer.parseInt(params.get(2));
+				
+				if( phase < 1 || phase > 6 ) { 
+					return new CommandAnswer(ERROR_MESSAGE_BAD_PHASE,null);
+				}
+				
+				terrMatches = getAllTerritoryMatches(phase);
+				
+			} else {
+				for( Integer n = 2; n != params.size(); ++n ) {
+					name += " "+params.get(n);
+				}
+				terrMatches = getAllTerritoryMatches(name);
+			}
+			
+			if( terrMatches.size() > 0 ) {
+				
+				try {
+					receivedMessage.reply(terrMatches.size()+" matches found");
+					Thread.sleep(100);
+					for( Integer t = 0; t != terrMatches.size() - 1; ++t ) {
+						receivedMessage.reply(null, terrMatches.get(t).getTerritoryEmbed());
+						Thread.sleep(100);
+					}
+					return new CommandAnswer(null,terrMatches.get(terrMatches.size() - 1).getTerritoryEmbed());
+				} catch( Exception e ) {
+					
+				}
+				
+			}
+		
+			return new CommandAnswer(ERROR_MESSAGE_NO_TERRITORY,null);
+			
+		}
+				
 		if(params.size() < 4) {
 			return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
 		}
 
-		if(COMMAND_PLATOON.equals(params.get(0))) {
+		/**
+		 * LOG COMMAND (Append with + and remove with -)
+		 * %tb log <territoryID> [platoon|<missionID>] [+|-]<number>
+		 * 
+		 * Example, log squadron 5 complete in HO3A
+		 * %tb log HO3B platoon 5
+		 * 
+		 * Example, screwed up and squadron 5 was not complete - remove
+		 * %tb log HO3B platoon -5
+		 * 
+		 * Example, log combat mission 1 complete 4/6 in HO5C
+		 * %tb log HO5C CM1 4 
+		 */
+		if(COMMAND_LOG.equalsIgnoreCase(params.get(0))) {
+			
+			TBEventLog lastTBLog = new TBEventLog();
+			Calendar today = Calendar.getInstance(TimeZone.getDefault());
+			if( lastTBLog.date.after(today) ) {
+				return new CommandAnswer(String.format(ERROR_NO_CURRENT_TB, ( new SimpleDateFormat( "yyyy-MM-dd" ) ).format( lastTBLog.date.getTime() )) ,null);
+			}			
+			
+			Long diff = today.getTimeInMillis() - lastTBLog.date.getTimeInMillis();
+			Integer phase = Integer.parseInt( diff.toString() );
+    		phase = phase / 1000 / 60 / 60 / 24; 
+			
+			if( phase > 0 && phase <= 6 ) {
+				
+				Integer guildID = getGuildIDFromDB(receivedMessage);
+
+				if(guildID == null) {
+					return new CommandAnswer(ERROR_MESSAGE_SQL, null);
+				}
+
+				if(guildID == -1) {
+					return new CommandAnswer(ERROR_MESSAGE_NO_GUILD_NUMBER,null);
+				}
+				
+				//PHASE OK
+				//GUILD OK
+				
+				/** CHECK TerritoryID **/
+				return new CommandAnswer("I've only go this far...", null);			
+				
+			}			
+			
+			return new CommandAnswer(String.format(ERROR_NO_CURRENT_TB, "***Scheduling error***"),null);
+		}
+		
+		if(COMMAND_PLATOON.equalsIgnoreCase(params.get(0))) {
 			if(receivedMessage.getChannelReceiver() == null) {
 				return new CommandAnswer(ERROR_MESSAGE_NO_CHANNEL,null);
 			}
@@ -221,10 +351,10 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 			}
 			
 			String retour = error(ERROR_COMMAND);
-			if(COMMAND_SHIPS.equals(params.get(1))) {
+			if(COMMAND_SHIPS.equalsIgnoreCase(params.get(1))) {
 				retour = findUnits(guildID, SHIP_MODE, unitName, rarity,receivedMessage);
 			}
-			else if(COMMAND_CHARS.equals(params.get(1))) {
+			else if(COMMAND_CHARS.equalsIgnoreCase(params.get(1))) {
 				retour = findUnits(guildID, CHAR_MODE, unitName, rarity,receivedMessage);
 			}
 			
@@ -291,12 +421,12 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		
 		updateOK = updateOK && GuildUnitsSWGOHGGDataParser.parseGuildUnits(guildID);
 		
-		if(SHIP_MODE.equals(mode)) {
+		if(SHIP_MODE.equalsIgnoreCase(mode)) {
 			updateOK = updateOK && GuildUnitsSWGOHGGDataParser.parseShips();
 			request=SQL_SUM_GUILD_UNITS_GP;
 		}
 		
-		if(CHAR_MODE.equals(mode)) {
+		if(CHAR_MODE.equalsIgnoreCase(mode)) {
 			updateOK = updateOK && GuildUnitsSWGOHGGDataParser.parseCharacters();
 			request=SQL_SUM_GUILD_SHIPS_GP;
 		}
@@ -353,11 +483,11 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		
 		updateOK = updateOK && GuildUnitsSWGOHGGDataParser.parseGuildUnits(guildID);
 		
-		if(SHIP_MODE.equals(mode)) {
+		if(SHIP_MODE.equalsIgnoreCase(mode)) {
 			updateOK = updateOK && GuildUnitsSWGOHGGDataParser.parseShips();
 		}
 		
-		if(CHAR_MODE.equals(mode)) {
+		if(CHAR_MODE.equalsIgnoreCase(mode)) {
 			updateOK = updateOK && GuildUnitsSWGOHGGDataParser.parseCharacters();
 		}
 		
@@ -521,6 +651,93 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 				logger.error(e.getMessage());
 			}
 		}
+	}
+	
+	public List<Territory> getAllTerritoryMatches( String name ) {
+		
+		List<Territory> matches = new ArrayList<Territory>();
+		
+		  Connection conn = null;
+		  PreparedStatement stmt = null;
+		  ResultSet rs = null;
+		
+		  try {
+			  
+			  conn = StaticVars.getJdbcConnection();
+		
+			  stmt = conn.prepareStatement(SQL_FIND_ALL_TERRITORIES);
+		
+			  stmt.setString(1,name);
+			  stmt.setString(2,"%"+name+"%");
+		
+			  logger.debug("Executing query : "+stmt.toString());		
+			  rs = stmt.executeQuery();
+		
+			  while(rs.next()) {
+				  
+				  matches.add( new Territory(rs.getString("territoryID"),rs.getString("territoryName"),rs.getString("tbName"),rs.getInt("phase"),rs.getInt("combatType"),rs.getInt("starPoints1"),rs.getInt("starPoints2"),rs.getInt("starPoints3"),rs.getString("ability"),rs.getString("affectedTerritories"),rs.getString("requiredUnits"),rs.getString("specialMission"),rs.getInt("combatMissions"),rs.getInt("missionPoints1"),rs.getInt("missionPoints2"),rs.getInt("missionPoints3"),rs.getInt("missionPoints4"),rs.getInt("missionPoints5"),rs.getInt("missionPoints6"),rs.getInt("platoonPoints1"),rs.getInt("platoonPoints2"),rs.getInt("platoonPoints3"),rs.getInt("platoonPoints4"),rs.getInt("platoonPoints5"),rs.getInt("platoonPoints6"),rs.getInt("minDeployStar1"),rs.getInt("minDeployStar2"),rs.getInt("minDeployStar3"),rs.getInt("minGPStar3"),rs.getString("notes") ) );
+				  
+			  }
+			
+			  return matches;
+			  
+		} catch(SQLException e) {
+			  logger.error(e.getMessage());
+			  e.printStackTrace();
+			  return null;
+		}
+		finally {
+			try {
+				if(rs != null) { rs.close(); }
+				if(stmt != null) { stmt.close(); }
+			} catch (SQLException e) {
+				logger.error(e.getMessage());
+			}
+		}
+
+	}
+	
+	public List<Territory> getAllTerritoryMatches( Integer phase ) {
+		
+		List<Territory> matches = new ArrayList<Territory>();
+		
+		  Connection conn = null;
+		  PreparedStatement stmt = null;
+		  ResultSet rs = null;
+		
+		  try {
+			  
+			  conn = StaticVars.getJdbcConnection();
+		
+			  stmt = conn.prepareStatement(SQL_FIND_ALL_TERRITORIES_BY_PHASE);
+		
+			  stmt.setInt(1,phase);
+		
+			  logger.debug("Executing query : "+stmt.toString());		
+			  rs = stmt.executeQuery();
+		
+			  while(rs.next()) {
+				  
+				  matches.add( new Territory(rs.getString("territoryID"),rs.getString("territoryName"),rs.getString("tbName"),rs.getInt("phase"),rs.getInt("combatType"),rs.getInt("starPoints1"),rs.getInt("starPoints2"),rs.getInt("starPoints3"),rs.getString("ability"),rs.getString("affectedTerritories"),rs.getString("requiredUnits"),rs.getString("specialMission"),rs.getInt("combatMissions"),rs.getInt("missionPoints1"),rs.getInt("missionPoints2"),rs.getInt("missionPoints3"),rs.getInt("missionPoints4"),rs.getInt("missionPoints5"),rs.getInt("missionPoints6"),rs.getInt("platoonPoints1"),rs.getInt("platoonPoints2"),rs.getInt("platoonPoints3"),rs.getInt("platoonPoints4"),rs.getInt("platoonPoints5"),rs.getInt("platoonPoints6"),rs.getInt("minDeployStar1"),rs.getInt("minDeployStar2"),rs.getInt("minDeployStar3"),rs.getInt("minGPStar3"),rs.getString("notes") ) );
+				  
+			  }
+			
+			  return matches;
+			  
+		} catch(SQLException e) {
+			  logger.error(e.getMessage());
+			  e.printStackTrace();
+			  return null;
+		}
+		finally {
+			try {
+				if(rs != null) { rs.close(); }
+				if(stmt != null) { stmt.close(); }
+			} catch (SQLException e) {
+				logger.error(e.getMessage());
+			}
+		}
+
 	}
 	
 	private String error(String message) {

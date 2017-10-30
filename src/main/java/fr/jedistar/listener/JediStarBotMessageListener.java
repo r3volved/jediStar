@@ -141,7 +141,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 		
 		messageParts.remove(0);
 		
-		String command = messagePartsArray[0];
+		String command = messagePartsArray[0].toLowerCase();
 		
 		JediStarBotCommand botCommand = commandsMap.get(command);
 		

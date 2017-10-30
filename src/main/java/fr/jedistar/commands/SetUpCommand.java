@@ -194,8 +194,8 @@ public class SetUpCommand implements JediStarBotCommand {
 					Integer guildID = Integer.parseInt(cmdVal);
 					if( channel.guildID != guildID ) {
 
-						MESSAGE_FLAG += String.format(WARN_UPDATE_GUILD,channel.guildID);
-						UPDATE_FLAG = true;						
+						MESSAGE_FLAG += channel.guildID != null ? String.format(WARN_UPDATE_GUILD,channel.guildID) : "";
+						UPDATE_FLAG = channel.guildID != null ? true : UPDATE_FLAG;						
 
 						channel.guildID = guildID;
 						
@@ -232,8 +232,8 @@ public class SetUpCommand implements JediStarBotCommand {
 				String newWH = cmdVal.equalsIgnoreCase("null") ? null : cmdVal;
 				if( channel.webhook != newWH ) {
 					
-					MESSAGE_FLAG += String.format(WARN_UPDATE_WEBHOOK);
-					UPDATE_FLAG = true;
+					MESSAGE_FLAG += channel.webhook != null ? String.format(WARN_UPDATE_WEBHOOK) : "";
+					UPDATE_FLAG = channel.webhook != null ? true : UPDATE_FLAG;
 
 					channel.webhook = newWH;
 

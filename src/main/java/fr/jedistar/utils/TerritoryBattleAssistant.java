@@ -24,14 +24,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.ImplDiscordAPI;
-import de.btobastian.javacord.Javacord;
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.impl.ImplUser;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.MessageBuilder;
-import de.btobastian.javacord.entities.message.embed.Embed;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 
 import fr.jedistar.Main;
@@ -81,10 +73,8 @@ public class TerritoryBattleAssistant implements Runnable {
 			timerInitDateTime.set(Calendar.SECOND, 0);
 
 			reset.scheduleAtFixedRate(new resetPhase(), timerInitDateTime.getTime(), 1000*60*60*24);
-			logger.debug( "Timer:"+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( timerInitDateTime.getTime() ) );
-			
-sendAlerts(3);
-			
+			logger.info( "Next schedule: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( timerInitDateTime.getTime() ) );
+					
 			logger.info( this.threadName+" started and scheduled successfully");
 	        Thread.sleep(500);
 	    } catch(InterruptedException e) {

@@ -166,7 +166,7 @@ public class RaidCommand implements JediStarBotCommand {
 		if(params.size() == 0) {
 			return new CommandAnswer(HELP,null);
 		}
-		String raidName = params.get(0);
+		String raidName = params.get(0).toLowerCase();
 		
 		//Accepter des noms alternatifs
 		for(Entry<String, List<String>> raidAliases : aliasesMap.entrySet()) {
@@ -181,7 +181,9 @@ public class RaidCommand implements JediStarBotCommand {
 		}
 		
 		try {		
-			String phaseName = params.get(1).replace("p","");
+			String phaseName = params.get(1).replace("haze","");
+			phaseName = phaseName.replace("p","");
+			
 			Integer phaseNumber = Integer.parseInt(phaseName);
 
 			if(params.size() == 3) {			

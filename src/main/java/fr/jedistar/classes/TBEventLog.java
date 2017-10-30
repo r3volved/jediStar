@@ -20,18 +20,24 @@ public class TBEventLog {
 	final static Logger logger = LoggerFactory.getLogger(Main.class);
 
 	private static final String INSERT_EVENTLOG_REQUEST = "INSERT INTO tbEventLog VALUES(?,?,?,?)";
-	private static final String SELECT_LAST_EVENTLOG_REQUEST = "SELECT * FROM tbEventLog ORDER BY startDate DESC LIMIT 1";
+	private static final String SELECT_LAST_EVENTLOG_REQUEST = "SELECT * FROM tbEventLog ORDER BY date DESC LIMIT 1";
 
 	  public Integer id;
 	  public Calendar date = Calendar.getInstance();
 	  public Integer phase;
 	  public String name;
+	  public boolean saved;
 
+	  public TBEventLog() {
+		  this.saved = this.loadLastEventLog();
+	  }
+	  
 	  public TBEventLog(Integer id, Calendar date, Integer phase, String name) {
 		  this.id = id;
 		  this.date = date;
 		  this.phase = phase;
 		  this.name = name;
+		  this.saved=false;
 	  }
 	  
 	  public boolean saveNewLog() {
@@ -52,6 +58,7 @@ public class TBEventLog {
 				logger.debug("Executing query : "+stmt.toString());
 				stmt.executeUpdate();
 				
+				this.saved = true;
 				return true;
 			}
 			catch(SQLException e) {
@@ -88,7 +95,7 @@ public class TBEventLog {
 					
 					this.id = rs.getInt("id");
 					this.date = Calendar.getInstance();
-					this.date.setTime(rs.getDate("startDate"));					
+					this.date.setTime(rs.getDate("date"));					
 					this.phase = rs.getInt("phase");
 					this.name = rs.getString("tbName");
 					logger.debug( "Last: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( this.date.getTime() ) );			
@@ -142,12 +149,16 @@ public class TBEventLog {
 	            	logger.warn("Scheduling problem - rescheduling::"+this.phase);
 	            	Calendar c = this.date;
 	            	c.add(Calendar.DATE, (6-this.phase));
-          		Integer offset = c.get(Calendar.DAY_OF_WEEK) == 0 ? 3 : 4;
-          		c.add(Calendar.DATE, offset);
+          		    
+	            	Integer offset = c.get(Calendar.DAY_OF_WEEK) == 0 ? 3 : 4;
+	            	c.add(Calendar.DATE, offset);
+	            	c.set(Calendar.HOUR_OF_DAY, 17);
+	            	c.set(Calendar.MINUTE, 0);
+	            	c.set(Calendar.SECOND, 0);
           		
-          		//UPDATE OBJECT TO NEW AND SAVE
+	            	//UPDATE OBJECT TO NEW AND SAVE
 	            	this.date = c;
-	            	this.phase = 0;
+	            	this.phase = 0;	            	
 	            	this.saveNewLog();
 
 	            }

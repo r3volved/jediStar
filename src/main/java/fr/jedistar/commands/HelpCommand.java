@@ -106,18 +106,18 @@ public class HelpCommand implements JediStarBotCommand {
     }
 
     private String constructAppropriateMessage(String s) throws HelpParamException {
-        StringBuilder sb = new StringBuilder();
+    	StringBuilder sb = new StringBuilder();
         sb.append(INTRO_MESSAGE);
         sb.append("\r\n");
-        if (s.equals(MODS)) {
+        if (s.equalsIgnoreCase(MODS)) {
             sb.append(MODS_MESSAGE);
-        } else if (s.equals(ARENE)) {
+        } else if (s.equalsIgnoreCase(ARENE)) {
             sb.append(ARENA_MESSAGE);
-        } else if (s.equals(EQUILIBRAGE)) {
+        } else if (s.equalsIgnoreCase(EQUILIBRAGE)) {
             sb.append(EQUILIBRAGE_MESSAGE);
-        } else if (s.equals(RAID)) {
+        } else if (s.equalsIgnoreCase(RAID)) {
             sb.append(RAID_MESSAGE);
-        } else if (s.equals(TB)) {
+        } else if (s.equalsIgnoreCase(TB)) {
             sb.append(TB_MESSAGE);
         }else {
             throw new HelpParamException();

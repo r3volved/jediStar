@@ -136,7 +136,7 @@ public class ModsCommand implements JediStarBotCommand {
 			return error(HELP);
 		}
 		
-		String requestedCharacterName = String.join(" ",params);
+		String requestedCharacterName = String.join(" ",params).toLowerCase();
 		
 		try {
 			JSONObject modsJsonRoot = getHttpJsonFile();
@@ -156,7 +156,7 @@ public class ModsCommand implements JediStarBotCommand {
 				try {
 					//Comparer le nom du personnage avec la recherche
 					String charName = charData.getString(JSON_CHAR_NAME).toLowerCase();			
-					String charShortName = charData.getString(JSON_SHORT);
+					String charShortName = charData.getString(JSON_SHORT).toLowerCase();
 					Double jaroWinkler = new JaroWinklerDistance().apply(requestedCharacterName, charName);			
 
 					Match match = new Match();
