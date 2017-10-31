@@ -174,7 +174,9 @@
             "platoon":"platoon",
             "characters":"chars",
             "ships":"ships",
-			"strategy":"gp"
+			"strategy":"gp",
+			"info":"info",
+			"log":"log"
         },
         
         "help":"Possible command :\r\n%tb platoon chars aayla 5\\*\r\n%tb platoon ships ghost 5\\*\r\n%tb gp",
@@ -190,10 +192,15 @@
             "noChannel":"This command must be typed from a server (not through a private message)",
             "sqlError":"Database access error",
             "noGuildNumber":"No guild associated to this Discord channel. Ask your bot admins to run *%setup*",
+            "noTerritory":"No territory found",
+            "noCurrentTB":"TB Log error",
+            "badMission":"This mission type or number wasn't recognized. Try CM1 for Combat mission 1 or SM1 for Special mission 1",
+            "badPhase":"Phase must have a number from 1 and 6", 
             "commandError":"This command is not recognized",
             "paramsNumber":"Parameters missing",
             "incorrectNumber":"We did not recognized a number",
             "dbUpdateError":"Database update error ",
+            "dbNoCurrentTB":"This command must be run during a territory battle phase.\r\nNext scheduled TB: %s ",
             "tooMuchResults":"Too many results, try limiting your search to one ofthe following chararacters :\r\n"
         }
     },

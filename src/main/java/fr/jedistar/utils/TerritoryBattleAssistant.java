@@ -126,7 +126,7 @@ public class TerritoryBattleAssistant implements Runnable {
 	}
 	
 	public boolean sendAlerts( Integer phase ) {
-		
+		logger.info("sending alerts? "+phase);
 		List<Channel> activeWebhooks = getWebhooks();
 		List<Territory> territories = getTerritories(phase);
 		

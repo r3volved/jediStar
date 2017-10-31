@@ -1,5 +1,6 @@
 package fr.jedistar.classes;
 
+import java.awt.Color;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -141,6 +142,11 @@ public class Territory {
 		  tEmbed.setAuthor(this.tbName,"","");
 		  tEmbed.setTitle(this.territoryID+" : "+this.territoryName);
 		  tEmbed.setDescription("");
+		  if( this.combatType == 2 ) { 
+			  tEmbed.setColor(Color.CYAN);
+		  } else { 
+			  tEmbed.setColor(Color.WHITE);
+		  }
 		  
 		  //Star points
 		  String stars = ":star::black_small_square::black_small_square: *"+NumberFormat.getIntegerInstance().format(this.starPoints.get(1))+"*\r\n:star::star::black_small_square: *"+NumberFormat.getIntegerInstance().format(this.starPoints.get(2))+"*\r\n:star::star::star: *"+NumberFormat.getIntegerInstance().format(this.starPoints.get(3))+"*";
@@ -169,6 +175,7 @@ public class Territory {
 		  if( this.specialMission != null ) {
 			 String smission = "Rewards: *"+this.specialMission+"*\r\nRequired: *"+this.requiredUnits+"*\r\nPoints 3/3: *"+NumberFormat.getIntegerInstance().format(this.missionPoints.get(3))+"*";
 			 tEmbed.addField("SM1 : Special Mission", smission, false);
+			 tEmbed.setColor(Color.ORANGE);
 		  }
 		  
 		  return tEmbed;		  
@@ -240,7 +247,7 @@ public class Territory {
 				  this.minDeployStar.add(rs.getInt("minDeployStar3"));
 				  this.minGPStar3=rs.getInt("minGPStar3");
 				  this.notes=rs.getString("notes");
-		
+				  
 				  return true;
 			  }
 			

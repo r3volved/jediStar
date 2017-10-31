@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
 import fr.jedistar.classes.TBEventLog;
+import fr.jedistar.classes.TBTerritoryLog;
 import fr.jedistar.classes.Territory;
 import fr.jedistar.commands.helper.GalaticPowerToStars;
 import fr.jedistar.formats.CommandAnswer;
@@ -54,6 +56,7 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final String ERROR_MESSAGE_NO_CHANNEL;
 	private final String ERROR_MESSAGE_NO_TERRITORY;
 	private final String ERROR_MESSAGE_NO_GUILD_NUMBER;
+	private final String ERROR_MESSAGE_NO_MISSION;
 	private final String ERROR_MESSAGE_BAD_PHASE;
 	private final String ERROR_MESSAGE_PARAMS_NUMBER;
 	private final String ERROR_COMMAND;
@@ -106,6 +109,7 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final static String JSON_TB_ERROR_MESSAGES_NO_TERRITORY = "noTerritory";
 	private final static String JSON_TB_ERROR_MESSAGES_NO_GUILD = "noGuildNumber";
 	private final static String JSON_TB_ERROR_MESSAGES_BAD_PHASE = "badPhase";
+	private final static String JSON_TB_ERROR_MESSAGES_NO_MISSION = "badMission";
 	private final static String JSON_TB_ERROR_MESSAGES_PARAMS_NUMBER = "paramsNumber";
 	private final static String JSON_TB_ERROR_MESSAGES_COMMAND = "commandError";
 	private final static String JSON_TB_ERROR_MESSAGES_INCORRECT_NUMBER = "incorrectNumber";
@@ -144,6 +148,7 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		ERROR_MESSAGE_NO_CHANNEL = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_CHANNEL);
 		ERROR_MESSAGE_NO_TERRITORY = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_TERRITORY);
 		ERROR_MESSAGE_NO_GUILD_NUMBER = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_GUILD);
+		ERROR_MESSAGE_NO_MISSION = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_MISSION);
 		ERROR_MESSAGE_BAD_PHASE = errorMessages.getString(JSON_TB_ERROR_MESSAGES_BAD_PHASE);
 		ERROR_MESSAGE_PARAMS_NUMBER = errorMessages.getString(JSON_TB_ERROR_MESSAGES_PARAMS_NUMBER);
 		ERROR_COMMAND = errorMessages.getString(JSON_TB_ERROR_MESSAGES_COMMAND);
@@ -287,16 +292,9 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		if(COMMAND_LOG.equalsIgnoreCase(params.get(0))) {
 			
 			TBEventLog lastTBLog = new TBEventLog();
-			Calendar today = Calendar.getInstance(TimeZone.getDefault());
-			if( lastTBLog.date.after(today) ) {
-				return new CommandAnswer(String.format(ERROR_NO_CURRENT_TB, ( new SimpleDateFormat( "yyyy-MM-dd" ) ).format( lastTBLog.date.getTime() )) ,null);
-			}			
+			lastTBLog.calculateToday(TimeZone.getDefault());
 			
-			Long diff = today.getTimeInMillis() - lastTBLog.date.getTimeInMillis();
-			Integer phase = Integer.parseInt( diff.toString() );
-    		phase = phase / 1000 / 60 / 60 / 24; 
-			
-			if( phase > 0 && phase <= 6 ) {
+			if( lastTBLog.phase > 0 && lastTBLog.phase <= 6 ) {
 				
 				Integer guildID = getGuildIDFromDB(receivedMessage);
 
@@ -308,15 +306,106 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 					return new CommandAnswer(ERROR_MESSAGE_NO_GUILD_NUMBER,null);
 				}
 				
-				//PHASE OK
-				//GUILD OK
+				String terrID = params.get(1);
+				Territory terr = new Territory(terrID);
+				//IF the ID of the new territory isn't the string I passed, then it got a different or no territory
+				if( terr.territoryID == null || !terr.territoryID.equalsIgnoreCase(terrID) ) {
+					
+					return new CommandAnswer(ERROR_MESSAGE_NO_TERRITORY,null);
+				}
 				
-				/** CHECK TerritoryID **/
-				return new CommandAnswer("I've only go this far...", null);			
+				TBTerritoryLog terrLog = new TBTerritoryLog(lastTBLog.id, guildID, terr.territoryID);				
+				terrLog.phase = terrLog.phase == 0 ? lastTBLog.phase : terrLog.phase;
+				//Territory log will find itself if exists or start new
 				
-			}			
+				String type = params.get(2);
+				if( type.equalsIgnoreCase(COMMAND_PLATOON) ) {
+					
+					Integer platoon = 0;
+					
+					try {
+						
+						platoon = Integer.parseInt(params.get(3));
+					
+					} catch( NumberFormatException e ) {
+						
+						logger.error(e.getMessage());
+						return new CommandAnswer(ERROR_INCORRECT_NUMBER,null);
+					}	
+						
+					char flag = 'Y';
+					if( platoon >= -6  && platoon < 0 ) {
+						
+						platoon = platoon*-1;
+						flag = 'N';
+						
+					}
+					
+					if( platoon > 0  && platoon <= 6 ) {
+							
+						char[] platoons = terrLog.platoons.toCharArray();
+						platoons[platoon-1] = flag;
+						terrLog.platoons = String.copyValueOf(platoons);
+						terrLog.saveLog();
+						return new CommandAnswer("Logged",null);
+
+					}
+										
+					return new CommandAnswer(ERROR_INCORRECT_NUMBER,null);
+					
+				}
+				
+				//NOT "PLATOON"
+				// DO DEPLOT HERE, BEFORE MISSIONS
+				
+				
+				String mission = params.get(2);
+				String mType = mission.substring(0, 2);
+				Integer mNum = Integer.parseInt(mission.substring(mission.length()-1));
+				if( mType.equalsIgnoreCase("SM") && terr.specialMission != null ) {
+					
+					//SM
+					String requestUser = receivedMessage.getAuthor().getMentionTag();
+					if( terrLog.SM1.contains(requestUser) ) {
+						
+						//ALREADY LOGGED, REQUEST UPDATE
+						return new CommandAnswer("Already logged",null);
+					}
+					
+					//LOG
+					terrLog.SM1.add(requestUser);
+					terrLog.saveLog();
+					return new CommandAnswer("Logged SM",null);
+					
+				} else if( mType.equalsIgnoreCase("CM") && mNum <= terr.combatMissions ) {
+					
+					//CM
+					String requestUser = receivedMessage.getAuthor().getId();
+					
+					if( mNum == 1 && terrLog.CM1.contains(requestUser) || mNum == 2 && terrLog.CM2.contains(requestUser) ) {
+						
+						//ALREADY LOGGED, REQUEST UPDATE
+						return new CommandAnswer("Already logged",null);
+					}
+					
+					//LOG
+					if( mNum == 1 ) {
+						terrLog.CM1.add(requestUser);
+					} else {
+						terrLog.CM2.add(requestUser);
+					}
+					
+					terrLog.saveLog();
+					return new CommandAnswer("Logged SM",null);
+					
+				}
+					
+				return new CommandAnswer(ERROR_MESSAGE_NO_MISSION,null);			
+				
+			}	
 			
-			return new CommandAnswer(String.format(ERROR_NO_CURRENT_TB, "***Scheduling error***"),null);
+			return new CommandAnswer(String.format(ERROR_NO_CURRENT_TB, ( new SimpleDateFormat( "yyyy-MM-dd" ) ).format( lastTBLog.date.getTime() )) ,null);			
+			
 		}
 		
 		if(COMMAND_PLATOON.equalsIgnoreCase(params.get(0))) {

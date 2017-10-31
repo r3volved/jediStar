@@ -126,12 +126,13 @@ public class TBEventLog {
 	  
 	    	Calendar today = Calendar.getInstance(eventTimeZone);
 	    	
-	    	//TEST
-	    	//today.set(Calendar.DATE, 28);
+	    	/* SET TEST today */
+	    	today.add(Calendar.DAY_OF_YEAR, 14);
+	    	/* ---- */
 	    	
 	    	Integer phase = 0;
 	    	
-	    	if( today.after( this.date ) ) {
+	    	if( today.getTimeInMillis() > this.date.getTimeInMillis() ) {
 
 	    		Long diff = today.getTimeInMillis() - this.date.getTimeInMillis();
 	    		phase = Integer.parseInt( diff.toString() );
@@ -162,7 +163,13 @@ public class TBEventLog {
 	            	this.saveNewLog();
 
 	            }
-	    	}    	
+	    		
+	    	}   
+	    	logger.info("Phase:"+phase);
+	    	logger.info("Today:"+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( today.getTime() ));
+	    	logger.info("this :"+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( this.date.getTime() ));	    	
+	    	logger.info("t:"+String.valueOf(today.getTimeInMillis())+" > "+this.date.getTimeInMillis()+" = "+String.valueOf(today.getTimeInMillis() > this.date.getTimeInMillis()));
+	    	
 
 	    	return true;
 	    }
