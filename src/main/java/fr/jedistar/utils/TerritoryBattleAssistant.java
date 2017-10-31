@@ -52,7 +52,7 @@ public class TerritoryBattleAssistant implements Runnable {
 		this.eventTimeZone = TimeZone.getTimeZone("UTC");
 		this.eventLog = new TBEventLog(0,Calendar.getInstance(),0,"Hoth - Imperial Invasion");
 		this.threadName = name;		
-		logger.info("Starting "+this.threadName);
+		logger.info("Launching "+this.threadName);
 
 	}
 	
@@ -73,7 +73,7 @@ public class TerritoryBattleAssistant implements Runnable {
 			timerInitDateTime.set(Calendar.SECOND, 0);
 
 			reset.scheduleAtFixedRate(new resetPhase(), timerInitDateTime.getTime(), 1000*60*60*24);
-			logger.info( "Next schedule: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( timerInitDateTime.getTime() ) );
+			logger.info( "Next timer: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( timerInitDateTime.getTime() ) );
 					
 			logger.info( this.threadName+" started and scheduled successfully");
 	        Thread.sleep(500);
@@ -126,7 +126,6 @@ public class TerritoryBattleAssistant implements Runnable {
 	}
 	
 	public boolean sendAlerts( Integer phase ) {
-		logger.info("sending alerts? "+phase);
 		List<Channel> activeWebhooks = getWebhooks();
 		List<Territory> territories = getTerritories(phase);
 		

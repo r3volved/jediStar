@@ -19,17 +19,23 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vdurmont.emoji.EmojiManager;
+
 import org.apache.commons.lang3.StringUtils;
 
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
+import de.btobastian.javacord.entities.message.impl.ImplReaction;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
+import fr.jedistar.classes.Channel;
 import fr.jedistar.classes.TBEventLog;
 import fr.jedistar.classes.TBTerritoryLog;
 import fr.jedistar.classes.Territory;
 import fr.jedistar.commands.helper.GalaticPowerToStars;
 import fr.jedistar.formats.CommandAnswer;
+import fr.jedistar.formats.PendingAction;
+import fr.jedistar.listener.JediStarBotReactionAddListener;
 import fr.jedistar.utils.GuildUnitsSWGOHGGDataParser;
 
 public class TerritoryBattlesCommand implements JediStarBotCommand {
@@ -50,11 +56,16 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final String NO_UNIT_FOUND;
 	private final String MAX_STARS_FROM_GP_TITLE;
 	private final String MAX_STARS_FROM_GP;
+	private final String SETUP_CHANNEL_OK;	
+	private final String CANCEL_MESSAGE;
+	private final String ALERT_UPDATE_TERRITORY_LOG;
+	
 	
 	private final String ERROR_MESSAGE;
 	private final String ERROR_MESSAGE_SQL;
 	private final String ERROR_MESSAGE_NO_CHANNEL;
 	private final String ERROR_MESSAGE_NO_TERRITORY;
+	private final String ERROR_MESSAGE_NO_TERRITORY_IN_PHASE;
 	private final String ERROR_MESSAGE_NO_GUILD_NUMBER;
 	private final String ERROR_MESSAGE_NO_MISSION;
 	private final String ERROR_MESSAGE_BAD_PHASE;
@@ -64,6 +75,8 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final String ERROR_DB_UPDATE;
 	private final String ERROR_NO_CURRENT_TB;
 	private final String TOO_MUCH_RESULTS;
+	private final String SQL_ERROR;	
+
 
 	private final static String SQL_GUILD_ID = "SELECT guildID FROM guild WHERE channelID=?;";
 	private final static String SQL_FIND_CHARS = "SELECT * FROM %s WHERE name LIKE ?";
@@ -102,11 +115,15 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final static String JSON_TB_MESSAGES_NO_UNTI_FOUND = "noUnitFound";
 	private final static String JSON_TB_MESSAGES_MAX_STARS_FROM_GP = "maxStarResult";
 	private final static String JSON_TB_MESSAGES_MAX_STARS_FROM_GP_TITLE = "maxStarTitle";
+	private static final String JSON_SETUP_MESSAGES_CHANNEL_SETUP_OK = "channelSetupOK";
+	private static final String JSON_SETUP_MESSAGES_CANCEL = "cancelAction";
+	private static final String JSON_SETUP_MESSAGES_ALERT_UPDATE_TERRITORY_LOG = "alertUpdateTerrLog";
 
 	private final static String JSON_TB_ERROR_MESSAGES = "errorMessages";
 	private final static String JSON_TB_ERROR_MESSAGES_SQL = "sqlError";
 	private final static String JSON_TB_ERROR_MESSAGES_NO_CHANNEL = "noChannel";
 	private final static String JSON_TB_ERROR_MESSAGES_NO_TERRITORY = "noTerritory";
+	private final static String JSON_TB_ERROR_MESSAGES_NO_TERRITORY_IN_PHASE = "noTerritoryInPhase";
 	private final static String JSON_TB_ERROR_MESSAGES_NO_GUILD = "noGuildNumber";
 	private final static String JSON_TB_ERROR_MESSAGES_BAD_PHASE = "badPhase";
 	private final static String JSON_TB_ERROR_MESSAGES_NO_MISSION = "badMission";
@@ -116,6 +133,7 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final static String JSON_TB_ERROR_MESSAGES_DB_UPDATE = "dbUpdateError";
 	private final static String JSON_TB_ERROR_MESSAGES_NO_CURRENT_TB = "dbNoCurrentTB";
 	private final static String JSON_TB_TOO_MUCH_RESULTS = "tooMuchResults";
+	private static final String JSON_SETUP_ERROR_SQL = "sqlError";
 
 	public TerritoryBattlesCommand() {
 
@@ -142,11 +160,15 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		NO_UNIT_FOUND = messages.getString(JSON_TB_MESSAGES_NO_UNTI_FOUND);
 		MAX_STARS_FROM_GP = messages.getString(JSON_TB_MESSAGES_MAX_STARS_FROM_GP);
 		MAX_STARS_FROM_GP_TITLE = messages.getString(JSON_TB_MESSAGES_MAX_STARS_FROM_GP_TITLE);
+		SETUP_CHANNEL_OK = messages.getString(JSON_SETUP_MESSAGES_CHANNEL_SETUP_OK);
+		CANCEL_MESSAGE = messages.getString(JSON_SETUP_MESSAGES_CANCEL);
+		ALERT_UPDATE_TERRITORY_LOG = messages.getString(JSON_SETUP_MESSAGES_ALERT_UPDATE_TERRITORY_LOG);
 		
 		JSONObject errorMessages = tbParams.getJSONObject(JSON_TB_ERROR_MESSAGES);
 		ERROR_MESSAGE_SQL = errorMessages.getString(JSON_TB_ERROR_MESSAGES_SQL);
 		ERROR_MESSAGE_NO_CHANNEL = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_CHANNEL);
 		ERROR_MESSAGE_NO_TERRITORY = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_TERRITORY);
+		ERROR_MESSAGE_NO_TERRITORY_IN_PHASE = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_TERRITORY_IN_PHASE);
 		ERROR_MESSAGE_NO_GUILD_NUMBER = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_GUILD);
 		ERROR_MESSAGE_NO_MISSION = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_MISSION);
 		ERROR_MESSAGE_BAD_PHASE = errorMessages.getString(JSON_TB_ERROR_MESSAGES_BAD_PHASE);
@@ -156,6 +178,8 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		ERROR_DB_UPDATE = errorMessages.getString(JSON_TB_ERROR_MESSAGES_DB_UPDATE);
 		ERROR_NO_CURRENT_TB = errorMessages.getString(JSON_TB_ERROR_MESSAGES_NO_CURRENT_TB);
 		TOO_MUCH_RESULTS = errorMessages.getString(JSON_TB_TOO_MUCH_RESULTS);
+		SQL_ERROR = errorMessages.getString(JSON_SETUP_ERROR_SQL);
+
 	}
 
 	@Override
@@ -291,10 +315,13 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		 */
 		if(COMMAND_LOG.equalsIgnoreCase(params.get(0))) {
 			
+			/** Handle: %tb log ... */
+			
 			TBEventLog lastTBLog = new TBEventLog();
 			lastTBLog.calculateToday(TimeZone.getDefault());
 			
 			if( lastTBLog.phase > 0 && lastTBLog.phase <= 6 ) {
+				// Current TB is in-phase
 				
 				Integer guildID = getGuildIDFromDB(receivedMessage);
 
@@ -306,34 +333,44 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 					return new CommandAnswer(ERROR_MESSAGE_NO_GUILD_NUMBER,null);
 				}
 				
-				String terrID = params.get(1);
-				Territory terr = new Territory(terrID);
-				//IF the ID of the new territory isn't the string I passed, then it got a different or no territory
-				if( terr.territoryID == null || !terr.territoryID.equalsIgnoreCase(terrID) ) {
+				
+				/** Handle: %tb log <terrID> ... */
+				
+				String terrID = params.get(1);								
+				if( !terrID.substring(2,3).trim().equalsIgnoreCase(lastTBLog.phase.toString().trim()) ) {
 					
-					return new CommandAnswer(ERROR_MESSAGE_NO_TERRITORY,null);
+					//The phase number in the territory ID doesn't match the current TB phase
+					return new CommandAnswer(ERROR_MESSAGE_NO_TERRITORY_IN_PHASE,null);					
 				}
 				
+				Territory terr = new Territory(terrID);
+				if( terr.territoryID == null || !terr.territoryID.equalsIgnoreCase(terrID) ) {
+					
+					//The ID of the new territory isn't the string I passed - not found
+					return new CommandAnswer(ERROR_MESSAGE_NO_TERRITORY,null);					
+				}
+				
+				//Territory log will find itself if exists or start new
 				TBTerritoryLog terrLog = new TBTerritoryLog(lastTBLog.id, guildID, terr.territoryID);				
 				terrLog.phase = terrLog.phase == 0 ? lastTBLog.phase : terrLog.phase;
-				//Territory log will find itself if exists or start new
-				
+								
 				String type = params.get(2);
 				if( type.equalsIgnoreCase(COMMAND_PLATOON) ) {
 					
-					Integer platoon = 0;
+					/** Handle: %tb log <terrID> [platoon] ... */
 					
-					try {
-						
-						platoon = Integer.parseInt(params.get(3));
-					
-					} catch( NumberFormatException e ) {
-						
+					Integer platoon = 0;					
+					try {						
+						platoon = Integer.parseInt(params.get(3));					
+					} catch( NumberFormatException e ) {						
 						logger.error(e.getMessage());
 						return new CommandAnswer(ERROR_INCORRECT_NUMBER,null);
 					}	
-						
+
 					char flag = 'Y';
+					
+					/** Handle: %tb log <terrID> [platoon] <num> */
+					
 					if( platoon >= -6  && platoon < 0 ) {
 						
 						platoon = platoon*-1;
@@ -355,48 +392,118 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 					
 				}
 				
-				//NOT "PLATOON"
-				// DO DEPLOT HERE, BEFORE MISSIONS
+				/** Handle: %tb log <terrID> <deploy> ... */				
 				
+				// TO DO...
 				
+				/** Handle: %tb log <terrID> <mission> ... */
+
 				String mission = params.get(2);
-				String mType = mission.substring(0, 2);
-				Integer mNum = Integer.parseInt(mission.substring(mission.length()-1));
-				if( mType.equalsIgnoreCase("SM") && terr.specialMission != null ) {
+				
+				String mType = mission.substring(0, 2);								
+				Integer mNum = 0;
+				Integer newVal = 0;
+				try {
+					mNum = Integer.parseInt(mission.substring(mission.length()-1));
+					newVal = Integer.parseInt(params.get(3).trim());										
+				} catch( NumberFormatException e ) {
+					logger.error( e.getMessage() );
+					return new CommandAnswer(ERROR_INCORRECT_NUMBER,null);
+				}
+			     
+				if( mType.equalsIgnoreCase("sm") && mNum == 1 ) {
+					
+					if( terr.specialMission == null ) { 
+						return new CommandAnswer("This territory doesn't have a special mission",null);
+					}
+					
+					if( newVal < 0 || newVal > 3) {
+						return new CommandAnswer("This mission only has 0-3 tiers",null);
+					}
+						
 					
 					//SM
-					String requestUser = receivedMessage.getAuthor().getMentionTag();
-					if( terrLog.SM1.contains(requestUser) ) {
+					String requestUser = receivedMessage.getAuthor().getId();
+					if( terrLog.SM1.indexOf(requestUser) >= 0 ) {						
 						
-						//ALREADY LOGGED, REQUEST UPDATE
-						return new CommandAnswer("Already logged",null);
+						if( terrLog.SM1.get(terrLog.SM1.indexOf(requestUser)+1).trim().equals(newVal.toString().trim()) ) {
+							return new CommandAnswer(String.format("Already logged as %s",newVal.toString()),null);
+						}
+						
+						String ALERT_UPDATE = String.format(ALERT_UPDATE_TERRITORY_LOG, terrLog.SM1.get(terrLog.SM1.indexOf(requestUser)+1) , newVal.toString());
+						terrLog.SM1.set(terrLog.SM1.indexOf(requestUser)+1, newVal.toString());
+						
+						//ALERT UPDATE CONFIRMATION
+						JediStarBotReactionAddListener.addPendingAction(new PendingAction(receivedMessage.getAuthor(),"executeTerritoryLogUpdate",this,receivedMessage,1,terrLog));
+						String emojiX = EmojiManager.getForAlias("x").getUnicode();
+						String emojiV = EmojiManager.getForAlias("white_check_mark").getUnicode();
+				
+						return new CommandAnswer(ALERT_UPDATE,null,emojiV,emojiX);						
+
 					}
 					
 					//LOG
 					terrLog.SM1.add(requestUser);
+					terrLog.SM1.add(newVal.toString());
 					terrLog.saveLog();
 					return new CommandAnswer("Logged SM",null);
 					
-				} else if( mType.equalsIgnoreCase("CM") && mNum <= terr.combatMissions ) {
+				} 
+										
+				if( mType.equalsIgnoreCase("cm") ) {
+					
+					if( mNum > terr.combatMissions || mNum < 1 ) {
+						return new CommandAnswer("This territory doesn't have that many combat missions",null);
+					}
+					
+					if( newVal < 0 || newVal > 6) {
+						return new CommandAnswer("This mission only has 0-6 tiers",null);
+					}
 					
 					//CM
 					String requestUser = receivedMessage.getAuthor().getId();
 					
-					if( mNum == 1 && terrLog.CM1.contains(requestUser) || mNum == 2 && terrLog.CM2.contains(requestUser) ) {
+					if( mNum == 1 && terrLog.CM1.contains(requestUser) || mNum == 2 && terrLog.CM2.contains(requestUser) ) {						
 						
-						//ALREADY LOGGED, REQUEST UPDATE
-						return new CommandAnswer("Already logged",null);
+						String ALERT_UPDATE = "";
+						if( mNum == 1 ) {
+							
+							if( terrLog.CM1.get(terrLog.CM1.indexOf(requestUser)+1).trim().equals(newVal.toString().trim()) ) {
+								return new CommandAnswer(String.format("Already logged as %s",newVal.toString()),null);
+							}
+							
+							ALERT_UPDATE = String.format(ALERT_UPDATE_TERRITORY_LOG, terrLog.CM1.get(terrLog.CM1.indexOf(requestUser)+1) , newVal.toString());
+							terrLog.CM1.set(terrLog.CM1.indexOf(requestUser)+1, newVal.toString());							
+						} else {
+							
+							if( terrLog.CM2.get(terrLog.CM2.indexOf(requestUser)+1).trim().equals(newVal.toString().trim()) ) {
+								return new CommandAnswer(String.format("Already logged as %s",newVal.toString()),null);
+							}
+							
+							ALERT_UPDATE = String.format(ALERT_UPDATE_TERRITORY_LOG, terrLog.CM2.get(terrLog.CM2.indexOf(requestUser)+1) , newVal.toString());
+							terrLog.CM2.set(terrLog.CM2.indexOf(requestUser)+1, newVal.toString());
+						}
+						
+						//ALERT UPDATE CONFIRMATION
+						JediStarBotReactionAddListener.addPendingAction(new PendingAction(receivedMessage.getAuthor(),"executeTerritoryLogUpdate",this,receivedMessage,1,terrLog));
+						String emojiX = EmojiManager.getForAlias("x").getUnicode();
+						String emojiV = EmojiManager.getForAlias("white_check_mark").getUnicode();
+				
+						return new CommandAnswer(ALERT_UPDATE,null,emojiV,emojiX);						
+						
 					}
 					
 					//LOG
-					if( mNum == 1 ) {
+					if( mNum == 1 ) { 
 						terrLog.CM1.add(requestUser);
-					} else {
+						terrLog.CM1.add(newVal.toString());
+					} else { 
 						terrLog.CM2.add(requestUser);
+						terrLog.CM2.add(newVal.toString());
 					}
 					
 					terrLog.saveLog();
-					return new CommandAnswer("Logged SM",null);
+					return new CommandAnswer("Logged CM"+mNum,null);
 					
 				}
 					
@@ -827,6 +934,31 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 			}
 		}
 
+	}
+	
+	/**
+	 * Updates the channel
+	 * @param serverID
+	 * @param channel
+	 * @return
+	 */
+	public String executeTerritoryLogUpdate(ImplReaction reaction,TBTerritoryLog log) {
+
+		String emojiX = EmojiManager.getForAlias("x").getUnicode();
+		String emojiV = EmojiManager.getForAlias("white_check_mark").getUnicode();
+
+		if(emojiX.equals(reaction.getUnicodeEmoji())) {
+			return CANCEL_MESSAGE;
+		}
+
+		if(emojiV.equals(reaction.getUnicodeEmoji())) {
+
+			
+			return log.saveLog() ? "Territory battle log updated" : SQL_ERROR;
+		
+		}
+		
+		return null;
 	}
 	
 	private String error(String message) {

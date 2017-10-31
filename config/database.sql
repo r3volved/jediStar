@@ -32,12 +32,12 @@ CREATE TABLE IF NOT EXISTS tbTerritoryLog
 (
 	id INT NOT NULL,
 	guildID INT NOT NULL,
-	territoryID VARCHAR(4) NOT NULL,
+	territoryID VARCHAR(8) NOT NULL,
 	phase INT NOT NULL,
 	CM1 TEXT NULL,
 	CM2 TEXT NULL,
 	SM1 TEXT NULL,
-	Platoons TEXT NULL,
+	platoons TEXT NULL,
 	PRIMARY KEY( id, territoryID, guildID )
 );
 
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS commandHistory
 );
 
 CREATE TABLE IF NOT EXISTS territoryData (
-  territoryID VARCHAR(4) NOT NULL,
+  territoryID VARCHAR(8) NOT NULL,
   territoryName VARCHAR(64) DEFAULT NULL,
   tbName VARCHAR(32) DEFAULT NULL,
   phase INT(11) DEFAULT NULL,

@@ -165,12 +165,8 @@ public class TBEventLog {
 	            }
 	    		
 	    	}   
-	    	logger.info("Phase:"+phase);
-	    	logger.info("Today:"+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( today.getTime() ));
-	    	logger.info("this :"+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( this.date.getTime() ));	    	
-	    	logger.info("t:"+String.valueOf(today.getTimeInMillis())+" > "+this.date.getTimeInMillis()+" = "+String.valueOf(today.getTimeInMillis() > this.date.getTimeInMillis()));
-	    	
 
+	    	logger.info("Found phase: "+phase);
 	    	return true;
 	    }
 	}
