@@ -287,10 +287,10 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 					receivedMessage.reply(terrMatches.size()+" matches found");
 					Thread.sleep(100);
 					for( Integer t = 0; t != terrMatches.size() - 1; ++t ) {
-						receivedMessage.reply(null, terrMatches.get(t).getTerritoryEmbed());
+						receivedMessage.reply(null, terrMatches.get(t).getTerritoryInfoEmbed());
 						Thread.sleep(100);
 					}
-					return new CommandAnswer(null,terrMatches.get(terrMatches.size() - 1).getTerritoryEmbed());
+					return new CommandAnswer(null,terrMatches.get(terrMatches.size() - 1).getTerritoryInfoEmbed());
 				} catch( Exception e ) {
 					
 				}
@@ -309,6 +309,16 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
  */
 		if(COMMAND_REPORT.equalsIgnoreCase(params.get(0))) {
 			
+			Integer guildID = getGuildIDFromDB(receivedMessage);
+
+			if(guildID == null) {
+				return new CommandAnswer(ERROR_MESSAGE_SQL, null);
+			}
+
+			if(guildID == -1) {
+				return new CommandAnswer(ERROR_MESSAGE_NO_GUILD_NUMBER,null);
+			}
+			
 			/** Handle: %tb report ... */
 			
 			TBEventLog thisEvent = new TBEventLog();
@@ -317,56 +327,79 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 			
 			if( COMMAND_PHASE.equalsIgnoreCase(params.get(1)) ) {
 				
-				/** Handle: %tb report phase ... */
+				/** Handle: %tb report phase <num> */
 					
-				if( params.size() == 2 ) {
-					
-					//GET CURRENT PHASE REPORT
-					//SELECT * FROM TBTerritoryLog WHERE guildID=? AND phase=? 
-					return new CommandAnswer("~~GET CURRENT PHASE",null);
-					
-				}
-				
-				try {
-					
-					Integer phase = 0;
-					phase = Integer.parseInt(params.get(2));
-					
-					if( phase < 1 || phase > thisEvent.phase ) {
-						return new CommandAnswer("~~That phase hasn't started"+phase.toString(),null);
+				Integer phase = 0;
+								
+				if( params.size() == 2 ) {			
+					phase = thisEvent.phase;
+				} else {
+					try {
+						phase = Integer.parseInt(params.get(2));
+					} catch( NumberFormatException e ) {
+						logger.error(e.getMessage());
+						return new CommandAnswer(ERROR_MESSAGE_BAD_PHASE,null);
 					}
-					
-					//GET PHASE # REPORT
-					//SELECT * FROM TBTerritoryLog WHERE guildID=? AND phase=?
-					return new CommandAnswer("~~GET PHASE"+phase.toString(),null);
-					
-					
-				} catch( NumberFormatException e ) {
-					logger.error(e.getMessage());
-					return new CommandAnswer(ERROR_MESSAGE_BAD_PHASE,null);
 				}
 				
+				if( phase < 1 || phase > thisEvent.phase ) {
+					return new CommandAnswer("~~That phase hasn't started"+phase.toString(),null);
+				}
+					
+				//GET PHASE # REPORT
+				List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, guildID, null, phase);
 				
-				
+				EmbedBuilder embed = new EmbedBuilder();					
+				embed.setAuthor("Territory Battle report","","");
+				embed.setTitle("Phase "+phase);
+				embed.setDescription("**-**");
+				embed.setColor(Color.BLUE);
+					
+				for( Integer l = 0; l != myLog.size(); ++l ) {		
+					String reportStr = myLog.get(l).report("full");
+					reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
+					embed.addField(myLog.get(l).territoryID, reportStr, false);
+				}
+					
+				return new CommandAnswer(null,embed);
+								
 			}
 			
 			/** Handle: %tb report HO2A
 			 *          %tb report Overlook
 			 */
 			String terrString = params.get(1);
+			for( Integer p = 2; p != params.size(); ++p ) {
+				terrString += " "+params.get(p);
+			}
+			
 			Territory territory = new Territory(terrString);
+			
+			EmbedBuilder embed = new EmbedBuilder();					
+			embed.setAuthor("Territory Battle report","","");
+			TBTerritoryLog myLog = new TBTerritoryLog(thisEvent.id, guildID, territory.territoryID);
+			
 			if( !terrString.equalsIgnoreCase(territory.territoryID) ) {
 				
 				//Ambiguous entry
 				if( territory.phase > thisEvent.phase ) {
 					return new CommandAnswer("~~Ambiguous territory found but out of phase "+thisEvent.phase.toString(),null);
 				}
-				
-				return new CommandAnswer("~~GET TERRITORY REPORT"+thisEvent.phase.toString(),null);
-				
+												
+				if( !myLog.saved ) { 					
+					return new CommandAnswer("This battle log does not exist",null);
+				}
 				
 			}
+
+			embed.setTitle(territory.territoryName);
+			embed.setDescription("**-**");
+			embed.setColor(Color.BLUE);
 			
+			String reportStr = myLog.report("full");
+			embed.addField(myLog.territoryID, reportStr, false);
+				
+			return new CommandAnswer(null,embed);
 			
 		}
 			

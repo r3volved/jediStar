@@ -134,7 +134,7 @@ public class Territory {
 		  return description;
 	  }
 	  
-	  public EmbedBuilder getTerritoryEmbed() {
+	  public EmbedBuilder getTerritoryInfoEmbed() {
 		  if( this.territoryID == null ) { return null; }
 		  
 		  EmbedBuilder tEmbed = new EmbedBuilder();		  

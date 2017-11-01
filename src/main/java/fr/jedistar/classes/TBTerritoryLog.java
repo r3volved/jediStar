@@ -4,10 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,14 +21,14 @@ public class TBTerritoryLog {
 	private final static String SQL_INSERT_TERRITORY_LOG = "INSERT INTO tbTerritoryLog (id, territoryID, guildID, phase, cm1, cm2, sm1, platoons) VALUES ( ?,?,?,?,?,?,?,? ) ON DUPLICATE KEY UPDATE phase=?, CM1=?, CM2=?, SM1=?, platoons=?";
 	private final static String SQL_FIND_TB_TERRITORY_LOG = "SELECT * FROM tbTerritoryLog WHERE id=? AND guildID=? AND territoryID=?";
 
-	/* ---- Single TB ---- */	
-	private final static String SQL_FIND_BY_ID = "SELECT * FROM tbTerriotryLog WHERE id=? AND guildID=?";
-	private final static String SQL_FIND_BY_ID_AND_PHASE = "SELECT * FROM tbTerriotryLog WHERE id=? AND guildID=? AND phase=?";
+	/* ---- Single TBLog ---- */	
+	private final static String SQL_FIND_BY_ID = "SELECT * FROM tbTerritoryLog WHERE id=? AND guildID=?";
+	private final static String SQL_FIND_BY_ID_AND_PHASE = "SELECT * FROM tbTerritoryLog WHERE id=? AND guildID=? AND phase=?";
 	
-	/* ---- Multiple TB ---- */
-	private final static String SQL_FIND_TOTAL_TB = "SELECT * FROM tbTerriotryLog WHERE guildID=? ORDER BY id ASC";	
-	private final static String SQL_FIND_TOTAL_BY_PHASE = "SELECT * FROM tbTerriotryLog WHERE guildID=? AND phase=? ORDER BY id ASC";
-	private final static String SQL_FIND_TOTAL_BY_TERRITORY = "SELECT * FROM tbTerriotryLog WHERE guildID=? AND territoryID=? ORDER BY id ASC";
+	/* ---- Multiple TBLog ---- */
+	private final static String SQL_FIND_TOTAL_TB = "SELECT * FROM tbTerritoryLog WHERE guildID=? ORDER BY id ASC";	
+	private final static String SQL_FIND_TOTAL_BY_PHASE = "SELECT * FROM tbTerritoryLog WHERE guildID=? AND phase=? ORDER BY id ASC";
+	private final static String SQL_FIND_TOTAL_BY_TERRITORY = "SELECT * FROM tbTerritoryLog WHERE guildID=? AND territoryID=? ORDER BY id ASC";
 
 	
 	public Integer logID = 0;
@@ -41,7 +41,11 @@ public class TBTerritoryLog {
 	public String platoons = "NNNNNN";
 	public boolean saved = false;	
 	
-
+	
+	public TBTerritoryLog() {
+		this.saved = false;
+	}
+			
 	public TBTerritoryLog( Integer ID, Integer guildID, String territoryID, Integer phase, String CM1, String CM2, String SM1, String platoons, boolean saved ) {
 		this.logID=ID;
 		this.guildID=guildID;
@@ -86,11 +90,107 @@ public class TBTerritoryLog {
 	}
 	
 	
-	public String report() {
+	public long getMissionTotal( List<String> mission, Territory terr ) {
 		
+		long total = 0;
+		for( Integer i = 1; i <= mission.size(); i+=2 ) {
+			
+			try {
+				
+				Integer val = Integer.parseInt(mission.get(i).trim());
+				total += terr.missionPoints.get(val);
+				
+			} catch (NumberFormatException e) {
+				logger.error(e.getMessage());
+				return 0;
+			}
+			
+		}		
+		return total;
+	}
+	
+	
+	public long getPlatoonTotal( String platoons, Territory terr ) {
+		
+		long total = 0;
+		char[] splitPlatoons = platoons.toUpperCase().toCharArray();
+		for( Integer i = 1; i != splitPlatoons.length; ++i ) {
+			
+			try {
+				
+				if( splitPlatoons[i] == 'Y' ) {
+					total += terr.platoonPoints.get(i);
+				}
+				
+			} catch (NumberFormatException e) {
+				logger.error(e.getMessage());
+				return 0;
+			}
+			
+		}		
+		return total;
+	}
+	
+	
+	public String report(String type) {
+		
+		final String REPORT_FULL = "full";
+		final String REPORT_PLATOON = "platoon";
+		final String REPORT_SPECIAL_MISSION = "sm";
+		final String REPORT_COMBAT_MISSION = "cm";
+				
 		String reportStr = "";
+		long starPoints = 0;
+		Territory terr = new Territory(this.territoryID);
 		
-		
+		if( type.equalsIgnoreCase(REPORT_FULL) ) {
+			
+			if( this.CM1.size() > 1 ) {
+				long total = this.getMissionTotal( this.CM1, terr );
+				starPoints += total;
+
+				reportStr += "**Combat mission 1**\r\n";
+				reportStr += "Participation: *"+String.valueOf(this.CM1.size() / 2)+" member(s)*\r\n";								
+				reportStr += "Points earned: *"+NumberFormat.getIntegerInstance().format(total)+"*\r\n";				
+			}
+			if( terr.combatMissions == 2 && this.CM2.size() > 1 ) {
+				long total = this.getMissionTotal( this.CM2, terr );
+				starPoints += total;
+
+				reportStr += "\t\r\n";
+				reportStr += "**Combat mission 2**\r\n";
+				reportStr += "Participation: *"+String.valueOf(this.CM2.size() / 2)+" member(s)*\r\n";
+				reportStr += "Points earned: *"+NumberFormat.getIntegerInstance().format(total)+"*\r\n";
+			}
+			if( terr.specialMission != null && this.SM1.size() > 1 ) {
+				long total = this.getMissionTotal( this.SM1, terr );
+				starPoints += total;
+
+				reportStr += "\t\r\n";
+				reportStr += "**Special mission**\r\n";
+				reportStr += "Participation: *"+String.valueOf(this.SM1.size() / 2)+" member(s)*\r\n";
+				reportStr += "Points earned: *"+NumberFormat.getIntegerInstance().format(total)+"*\r\n";
+				reportStr += "Rewards: *"+terr.specialMission+"*\r\n";
+			}
+			
+			long ptotal = getPlatoonTotal( this.platoons, terr );
+			starPoints += ptotal;
+			
+			reportStr += "\t\r\n";
+			reportStr += "__*Estimated points*__: "+NumberFormat.getIntegerInstance().format(ptotal)+"\r\n";
+			
+			Integer stars = 0;
+			stars = starPoints >= (long) terr.starPoints.get(1) ? 1 : stars;
+			stars = starPoints >= (long) terr.starPoints.get(2) ? 2 : stars;
+			stars = starPoints >= (long) terr.starPoints.get(3) ? 3 : stars;
+			
+			reportStr += "__*Estimated stars*__:  ";
+			for( Integer s = 1; s <= 3; ++s ) {
+				reportStr += stars >= s ? ":star:" : ":black_small_square:";
+			}
+			reportStr += "\r\n";
+			
+		}		
 		
 		return reportStr;
 		
