@@ -49,6 +49,8 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final String COMMAND_STRATEGY;
 	private final String COMMAND_INFO;
 	private final String COMMAND_LOG;
+	private final String COMMAND_REPORT;
+	private final String COMMAND_PHASE;
 
 	private final String HELP;
 
@@ -109,7 +111,9 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 	private final static String JSON_TB_COMMANDS_STRATEGY = "strategy";
 	private final static String JSON_TB_COMMANDS_INFO = "info";
 	private final static String JSON_TB_COMMANDS_LOG = "log";
-			
+	private final static String JSON_TB_COMMANDS_REPORT = "report";
+	private final static String JSON_TB_COMMANDS_PHASE = "phase";
+	
 	private final static String JSON_TB_MESSAGES = "messages";
 	private final static String JSON_TB_MESSAGES_DISPLAYED_RESULTS = "displayedResults";
 	private final static String JSON_TB_MESSAGES_NO_UNTI_FOUND = "noUnitFound";
@@ -153,7 +157,8 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		COMMAND_STRATEGY = commands.getString(JSON_TB_COMMANDS_STRATEGY);
 		COMMAND_INFO = commands.getString(JSON_TB_COMMANDS_INFO);
 		COMMAND_LOG = commands.getString(JSON_TB_COMMANDS_LOG);
-				
+		COMMAND_REPORT = commands.getString(JSON_TB_COMMANDS_REPORT);
+		COMMAND_PHASE = commands.getString(JSON_TB_COMMANDS_PHASE);
 
 		JSONObject messages = tbParams.getJSONObject(JSON_TB_MESSAGES);
 		DISPLAYED_RESULTS = messages.getString(JSON_TB_MESSAGES_DISPLAYED_RESULTS);
@@ -295,7 +300,77 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 			return new CommandAnswer(ERROR_MESSAGE_NO_TERRITORY,null);
 			
 		}
+		
+/**
+ * REPORT progress
+ * 
+ * %tb report phase
+ * 
+ */
+		if(COMMAND_REPORT.equalsIgnoreCase(params.get(0))) {
+			
+			/** Handle: %tb report ... */
+			
+			TBEventLog thisEvent = new TBEventLog();
+			thisEvent.loadLastEventLog();
+			thisEvent.calculateToday(TimeZone.getDefault());
+			
+			if( COMMAND_PHASE.equalsIgnoreCase(params.get(1)) ) {
 				
+				/** Handle: %tb report phase ... */
+					
+				if( params.size() == 2 ) {
+					
+					//GET CURRENT PHASE REPORT
+					//SELECT * FROM TBTerritoryLog WHERE guildID=? AND phase=? 
+					return new CommandAnswer("~~GET CURRENT PHASE",null);
+					
+				}
+				
+				try {
+					
+					Integer phase = 0;
+					phase = Integer.parseInt(params.get(2));
+					
+					if( phase < 1 || phase > thisEvent.phase ) {
+						return new CommandAnswer("~~That phase hasn't started"+phase.toString(),null);
+					}
+					
+					//GET PHASE # REPORT
+					//SELECT * FROM TBTerritoryLog WHERE guildID=? AND phase=?
+					return new CommandAnswer("~~GET PHASE"+phase.toString(),null);
+					
+					
+				} catch( NumberFormatException e ) {
+					logger.error(e.getMessage());
+					return new CommandAnswer(ERROR_MESSAGE_BAD_PHASE,null);
+				}
+				
+				
+				
+			}
+			
+			/** Handle: %tb report HO2A
+			 *          %tb report Overlook
+			 */
+			String terrString = params.get(1);
+			Territory territory = new Territory(terrString);
+			if( !terrString.equalsIgnoreCase(territory.territoryID) ) {
+				
+				//Ambiguous entry
+				if( territory.phase > thisEvent.phase ) {
+					return new CommandAnswer("~~Ambiguous territory found but out of phase "+thisEvent.phase.toString(),null);
+				}
+				
+				return new CommandAnswer("~~GET TERRITORY REPORT"+thisEvent.phase.toString(),null);
+				
+				
+			}
+			
+			
+		}
+			
+			
 		if(params.size() < 4) {
 			return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
 		}
