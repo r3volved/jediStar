@@ -308,7 +308,11 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
  * 
  */
 		if(COMMAND_REPORT.equalsIgnoreCase(params.get(0))) {
-			
+
+			if(receivedMessage.getChannelReceiver() == null) {
+				return new CommandAnswer(ERROR_MESSAGE_NO_CHANNEL,null);
+			}
+
 			Integer guildID = getGuildIDFromDB(receivedMessage);
 
 			if(guildID == null) {
@@ -324,6 +328,10 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 			TBEventLog thisEvent = new TBEventLog();
 			thisEvent.loadLastEventLog();
 			thisEvent.calculateToday(TimeZone.getDefault());
+			
+			if( thisEvent.id == null ) {
+				return new CommandAnswer("ERROR_MESSAGE_NO_LOG",null);
+			}
 			
 			if( COMMAND_PHASE.equalsIgnoreCase(params.get(1)) ) {
 				
@@ -341,16 +349,20 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 						return new CommandAnswer(ERROR_MESSAGE_BAD_PHASE,null);
 					}
 				}
+
+				if( phase < 1 || phase > 6 ) {
+					return new CommandAnswer("ERROR_MESSAGE_BAD_PHASE"+phase.toString(),null);
+				}
 				
 				if( phase < 1 || phase > thisEvent.phase ) {
-					return new CommandAnswer("~~That phase hasn't started"+phase.toString(),null);
+					return new CommandAnswer("ERROR_MESSAGE_OUT_OF_PHASE",null);
 				}
 					
 				//GET PHASE # REPORT
 				List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, guildID, null, phase);
 				
 				EmbedBuilder embed = new EmbedBuilder();					
-				embed.setAuthor("Territory Battle report","","");
+				embed.setAuthor("Territory Battle report ("+thisEvent.id+" - "+guildID+")","","");
 				embed.setTitle("Phase "+phase);
 				embed.setDescription("**-**");
 				embed.setColor(Color.BLUE);
@@ -365,6 +377,95 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 								
 			}
 			
+
+			/** 
+			 * Report current platoons
+			 * Handle: %tb report platoons
+			 *         %tb report platoons phase <num>
+			 */
+			
+			final String COMMAND_PLATOONS = "platoons";
+			if( COMMAND_PLATOONS.equalsIgnoreCase(params.get(1)) ) {
+								
+				Integer phase = thisEvent.phase;
+
+				if( params.size() > 2 ) {
+					
+					if( COMMAND_PHASE.equalsIgnoreCase(params.get(2)) ) {
+				
+						/** Handle: %tb report platoons phase <num> */
+							
+						if( params.size() == 4 ) {
+							try {
+								phase = Integer.parseInt(params.get(3));
+							} catch( NumberFormatException e ) {
+								logger.error(e.getMessage());
+								return new CommandAnswer(ERROR_MESSAGE_BAD_PHASE,null);
+							}
+						}
+						
+						if( phase < 1 || phase > 6 ) {
+							return new CommandAnswer("ERROR_MESSAGE_BAD_PHASE",null);
+						}
+						
+						if( phase < 1 || phase > thisEvent.phase ) {
+							return new CommandAnswer("ERROR_MESSAGE_OUT_OF_PHASE",null);
+						}
+					}
+
+					/** Handle: %tb report platoons HO3A */
+					
+					String terrName = params.get(2);
+					for( Integer i = 3; i != params.size(); ++i ) {
+						terrName += " "+params.get(i);
+					}
+					
+					List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, guildID, terrName, 0);
+					
+					if( myLog.size() == 0 ) {
+						return new CommandAnswer("ERROR_MESSAGE_NO_LOG",null);
+					}
+					
+					EmbedBuilder embed = new EmbedBuilder();					
+					embed.setAuthor("Territory Battle report ("+thisEvent.id+" - "+guildID+")","","");
+					embed.setTitle("Phase "+phase);
+					embed.setDescription("**-**");
+					embed.setColor(Color.BLUE);
+						
+					for( Integer l = 0; l != myLog.size(); ++l ) {		
+						String reportStr = myLog.get(l).report("platoons");
+						reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
+						embed.addField(myLog.get(l).territoryID, reportStr, false);
+					}
+						
+					return new CommandAnswer(null,embed);					
+				
+				}
+
+				/** Handle: %tb report platoons */
+				
+				List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, guildID, null, phase);
+				
+				if( myLog.size() == 0 ) {
+					return new CommandAnswer("ERROR_MESSAGE_NO_LOG",null);
+				}
+				
+				EmbedBuilder embed = new EmbedBuilder();					
+				embed.setAuthor("Territory Battle report ("+thisEvent.id+" - "+guildID+")","","");
+				embed.setTitle("Phase "+phase);
+				embed.setDescription("**-**");
+				embed.setColor(Color.BLUE);
+					
+				for( Integer l = 0; l != myLog.size(); ++l ) {		
+					String reportStr = myLog.get(l).report("platoons");
+					reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
+					embed.addField(myLog.get(l).territoryID, reportStr, false);
+				}
+					
+				return new CommandAnswer(null,embed);				
+				
+			}
+			
 			/** Handle: %tb report HO2A
 			 *          %tb report Overlook
 			 */
@@ -376,18 +477,18 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 			Territory territory = new Territory(terrString);
 			
 			EmbedBuilder embed = new EmbedBuilder();					
-			embed.setAuthor("Territory Battle report","","");
+			embed.setAuthor("Territory Battle report ("+thisEvent.id+" - "+guildID+")","","");
 			TBTerritoryLog myLog = new TBTerritoryLog(thisEvent.id, guildID, territory.territoryID);
 			
 			if( !terrString.equalsIgnoreCase(territory.territoryID) ) {
 				
 				//Ambiguous entry
 				if( territory.phase > thisEvent.phase ) {
-					return new CommandAnswer("~~Ambiguous territory found but out of phase "+thisEvent.phase.toString(),null);
+					return new CommandAnswer("ERROR_MESSAGE_AMBIGUOUS_OUT_OF_PHASE",null);
 				}
 												
 				if( !myLog.saved ) { 					
-					return new CommandAnswer("This battle log does not exist",null);
+					return new CommandAnswer("ERROR_MESSAGE_NO_LOG",null);
 				}
 				
 			}

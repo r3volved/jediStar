@@ -24,6 +24,7 @@ public class TBTerritoryLog {
 	/* ---- Single TBLog ---- */	
 	private final static String SQL_FIND_BY_ID = "SELECT * FROM tbTerritoryLog WHERE id=? AND guildID=?";
 	private final static String SQL_FIND_BY_ID_AND_PHASE = "SELECT * FROM tbTerritoryLog WHERE id=? AND guildID=? AND phase=?";
+	private final static String SQL_FIND_BY_ID_AND_TERRITORY = "SELECT * FROM tbTerritoryLog WHERE id=? AND guildID=? AND territoryID=?";
 	
 	/* ---- Multiple TBLog ---- */
 	private final static String SQL_FIND_TOTAL_TB = "SELECT * FROM tbTerritoryLog WHERE guildID=? ORDER BY id ASC";	
@@ -132,12 +133,23 @@ public class TBTerritoryLog {
 	}
 	
 	
+	public String history(String type) {
+		
+		String historyStr = "";
+		
+		
+		
+		return historyStr;
+		
+	}
+	
+	
 	public String report(String type) {
 		
 		final String REPORT_FULL = "full";
-		final String REPORT_PLATOON = "platoon";
+		final String REPORT_PLATOONS = "platoons";
 		final String REPORT_SPECIAL_MISSION = "sm";
-		final String REPORT_COMBAT_MISSION = "cm";
+		final String REPORT_COMBAT_MISSIONS = "cm";
 				
 		String reportStr = "";
 		long starPoints = 0;
@@ -192,6 +204,36 @@ public class TBTerritoryLog {
 			
 		}		
 		
+		if( type.equalsIgnoreCase(REPORT_PLATOONS) ) {
+			
+			char[] p = this.platoons.toCharArray();
+			reportStr += "**"+terr.territoryName+"**\r\n";
+			
+			long ptotal = getPlatoonTotal( this.platoons, terr );
+			starPoints += ptotal;
+			
+			reportStr += "```\r\n";
+			reportStr += "Platoons: | 1 | 2 | 3 | 4 | 5 |\r\n";
+			reportStr += "          | ";
+			reportStr += "N".equalsIgnoreCase(String.valueOf(p[0])) ? "- | " : "F | ";
+			reportStr += "N".equalsIgnoreCase(String.valueOf(p[1])) ? "- | " : "F | ";
+			reportStr += "N".equalsIgnoreCase(String.valueOf(p[2])) ? "- | " : "F | ";
+			reportStr += "N".equalsIgnoreCase(String.valueOf(p[3])) ? "- | " : "F | ";
+			reportStr += "N".equalsIgnoreCase(String.valueOf(p[4])) ? "- | " : "F | ";
+			reportStr += "\r\n";
+			reportStr += "-------------------------------\r\n";
+			reportStr += "Estimated points: "+NumberFormat.getIntegerInstance().format(ptotal)+"\r\n";			
+			reportStr += "```";
+		}
+		
+		if( type.equalsIgnoreCase(REPORT_COMBAT_MISSIONS) ) {
+			
+		}
+		
+		if( type.equalsIgnoreCase(REPORT_SPECIAL_MISSION) ) {
+			
+		}
+
 		return reportStr;
 		
 	}
@@ -268,6 +310,12 @@ public class TBTerritoryLog {
 						stmt.setInt(1,id);
 						stmt.setInt(2,guildID);
 						stmt.setInt(3,phase);
+					} else if( territoryID != null ) {
+
+						stmt = conn.prepareStatement(SQL_FIND_BY_ID_AND_TERRITORY);
+						stmt.setInt(1,id);
+						stmt.setInt(2,guildID);
+						stmt.setString(3,territoryID);
 					} else {
 						
 						stmt = conn.prepareStatement(SQL_FIND_BY_ID);
@@ -309,7 +357,7 @@ public class TBTerritoryLog {
 			return logList;
 
 		} catch(SQLException e) {
-			  logger.error(e.getMessage());
+			  logger.error("C : "+e.getMessage());
 			  e.printStackTrace();
 			  return null;
 		}
@@ -318,7 +366,7 @@ public class TBTerritoryLog {
 				if(rs != null) { rs.close(); }
 				if(stmt != null) { stmt.close(); }
 			} catch (SQLException e) {
-				logger.error(e.getMessage());
+				logger.error("F : "+e.getMessage());
 			}
 		}
 	}

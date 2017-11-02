@@ -62,7 +62,7 @@ public class TBEventLog {
 				return true;
 			}
 			catch(SQLException e) {
-				logger.error(e.getMessage());
+				logger.error("TBELog: "+e.getMessage());
 				return false;
 			}
 			finally {
@@ -72,7 +72,7 @@ public class TBEventLog {
 					if(stmt != null) { stmt.close(); }					
 				} catch (SQLException e) {
 					e.printStackTrace();
-					logger.error(e.getMessage());
+					logger.error("TBELog: "+e.getMessage());
 				}
 			}	  
 	  }
@@ -107,7 +107,7 @@ public class TBEventLog {
 				}
 			}
 			catch(SQLException e) {
-				logger.error(e.getMessage());
+				logger.error("TBELog: "+e.getMessage());
 				return false;
 			}
 			finally {
@@ -117,7 +117,7 @@ public class TBEventLog {
 					if(stmt != null) { stmt.close(); } 				
 				} catch (SQLException e) {
 					e.printStackTrace();
-					logger.error(e.getMessage());
+					logger.error("TBELog: "+e.getMessage());
 				}
 			}
 		}
