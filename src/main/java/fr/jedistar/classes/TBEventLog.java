@@ -35,6 +35,11 @@ public class TBEventLog {
 	  public TBEventLog(Integer id, Calendar date, Integer phase, String name) {
 		  this.id = id;
 		  this.date = date;
+		  
+		  this.date.set(Calendar.HOUR, 17);
+		  this.date.set(Calendar.MINUTE, 0);
+		  this.date.set(Calendar.SECOND, 0);
+		  
 		  this.phase = phase;
 		  this.name = name;
 		  this.saved=false;
@@ -125,9 +130,12 @@ public class TBEventLog {
 	    public boolean calculateToday(TimeZone eventTimeZone) {
 	  
 	    	Calendar today = Calendar.getInstance(eventTimeZone);
+	    	today.set(Calendar.HOUR, 17);
+	    	today.set(Calendar.MINUTE, 0);
+	    	today.set(Calendar.SECOND, 0);
 	    	
 	    	/* SET TEST today */
-	    	today.add(Calendar.DAY_OF_YEAR, 14);
+	    	//today.add(Calendar.DAY_OF_YEAR, 14);
 	    	/* ---- */
 	    	
 	    	Integer phase = 0;

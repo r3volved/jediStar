@@ -213,20 +213,24 @@ public class TBTerritoryLog {
 			starPoints += ptotal;
 			
 			reportStr += "```\r\n";
-			reportStr += "Platoons: | 1 | 2 | 3 | 4 | 5 |\r\n";
-			reportStr += "          | ";
+			reportStr += "Platoons:\r\n";
+			reportStr += "| 1 | 2 | 3 | 4 | 5 | 6 |\r\n";
+			reportStr += "| ";
 			reportStr += "N".equalsIgnoreCase(String.valueOf(p[0])) ? "- | " : "F | ";
 			reportStr += "N".equalsIgnoreCase(String.valueOf(p[1])) ? "- | " : "F | ";
 			reportStr += "N".equalsIgnoreCase(String.valueOf(p[2])) ? "- | " : "F | ";
 			reportStr += "N".equalsIgnoreCase(String.valueOf(p[3])) ? "- | " : "F | ";
 			reportStr += "N".equalsIgnoreCase(String.valueOf(p[4])) ? "- | " : "F | ";
+			reportStr += "N".equalsIgnoreCase(String.valueOf(p[5])) ? "- | " : "F | ";
 			reportStr += "\r\n";
-			reportStr += "-------------------------------\r\n";
+			reportStr += "-------------------------\r\n";
 			reportStr += "Estimated points: "+NumberFormat.getIntegerInstance().format(ptotal)+"\r\n";			
 			reportStr += "```";
 		}
 		
 		if( type.equalsIgnoreCase(REPORT_COMBAT_MISSIONS) ) {
+			
+			
 			
 		}
 		
