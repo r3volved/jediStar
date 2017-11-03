@@ -99,8 +99,12 @@ public class TBEventLog {
 				if(rs.next()) {
 					
 					this.id = rs.getInt("id");
-					this.date = Calendar.getInstance();
-					this.date.setTime(rs.getDate("date"));					
+					this.date = Calendar.getInstance(TimeZone.getDefault());
+					this.date.setTime(rs.getDate("date"));
+					this.date.set(Calendar.HOUR, 17);
+					this.date.set(Calendar.MINUTE, 0);
+					this.date.set(Calendar.SECOND, 0);
+					
 					this.phase = rs.getInt("phase");
 					this.name = rs.getString("tbName");
 					logger.debug( "Last: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( this.date.getTime() ) );			
@@ -139,6 +143,9 @@ public class TBEventLog {
 	    	/* ---- */
 	    	
 	    	Integer phase = 0;
+	    	
+//	    	logger.info( "today: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( today.getTime() ) );
+//	    	logger.info( "log  : "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( this.date.getTime() ) );
 	    	
 	    	if( today.getTimeInMillis() > this.date.getTimeInMillis() ) {
 
