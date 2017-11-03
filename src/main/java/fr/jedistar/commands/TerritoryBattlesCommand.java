@@ -23,6 +23,7 @@ import com.vdurmont.emoji.EmojiManager;
 
 import org.apache.commons.lang3.StringUtils;
 
+import de.btobastian.javacord.entities.Server;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import de.btobastian.javacord.entities.message.impl.ImplReaction;
@@ -465,6 +466,178 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 				return new CommandAnswer(null,embed);				
 				
 			}
+
+			
+			 /** Handle: %tb report sm */
+
+			
+			final String COMMAND_SM = "sm";
+			if( COMMAND_SM.equalsIgnoreCase(params.get(1)) ) {
+								
+				Integer phase = thisEvent.phase;
+
+				if( params.size() > 2 ) {
+					
+					if( COMMAND_PHASE.equalsIgnoreCase(params.get(2)) ) {
+				
+						/** Handle: %tb report sm phase <num> */
+							
+						if( params.size() == 4 ) {
+							try {
+								phase = Integer.parseInt(params.get(3));
+							} catch( NumberFormatException e ) {
+								logger.error(e.getMessage());
+								return new CommandAnswer(ERROR_MESSAGE_BAD_PHASE,null);
+							}
+						}
+						
+						if( phase < 1 || phase > 6 ) {
+							return new CommandAnswer("ERROR_MESSAGE_BAD_PHASE",null);
+						}
+						
+						if( phase < 1 || phase > thisEvent.phase ) {
+							return new CommandAnswer("ERROR_MESSAGE_OUT_OF_PHASE",null);
+						}
+					}
+
+					/** Handle: %tb report sm HO3A */
+					
+					String terrName = params.get(2);
+					for( Integer i = 3; i != params.size(); ++i ) {
+						terrName += " "+params.get(i);
+					}
+					
+					List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, guildID, terrName, 0);
+					
+					if( myLog.size() == 0 ) {
+						return new CommandAnswer("ERROR_MESSAGE_NO_LOG",null);
+					}
+					
+					EmbedBuilder embed = new EmbedBuilder();					
+					embed.setAuthor("Territory Battle report ("+thisEvent.id+" - "+guildID+")","","");
+					embed.setTitle("Phase "+phase);
+					embed.setDescription("**-**");
+					embed.setColor(Color.BLUE);
+						
+					for( Integer l = 0; l != myLog.size(); ++l ) {		
+						String reportStr = myLog.get(l).report("sm");
+						reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
+						embed.addField(myLog.get(l).territoryID, reportStr, false);
+					}
+						
+					return new CommandAnswer(null,embed);					
+				
+				}
+
+				/** Handle: %tb report sm */
+				
+				List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, guildID, null, phase);
+				
+				if( myLog.size() == 0 ) {
+					return new CommandAnswer("ERROR_MESSAGE_NO_LOG",null);
+				}
+				
+				EmbedBuilder embed = new EmbedBuilder();					
+				embed.setAuthor("Territory Battle report ("+thisEvent.id+" - "+guildID+")","","");
+				embed.setTitle("Phase "+phase);
+				embed.setDescription("**-**");
+				embed.setColor(Color.BLUE);
+					
+				for( Integer l = 0; l != myLog.size(); ++l ) {		
+					String reportStr = myLog.get(l).report("sm");
+					reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
+					embed.addField(myLog.get(l).territoryID, reportStr, false);
+				}
+					
+				return new CommandAnswer(null,embed);				
+				
+			}
+			
+			 /** Handle: %tb report cm */
+
+			
+			final String COMMAND_CM = "cm";
+			if( COMMAND_CM.equalsIgnoreCase(params.get(1)) ) {
+								
+				Integer phase = thisEvent.phase;
+
+				if( params.size() > 2 ) {
+					
+					if( COMMAND_PHASE.equalsIgnoreCase(params.get(2)) ) {
+				
+						/** Handle: %tb report cm phase <num> */
+							
+						if( params.size() == 4 ) {
+							try {
+								phase = Integer.parseInt(params.get(3));
+							} catch( NumberFormatException e ) {
+								logger.error(e.getMessage());
+								return new CommandAnswer(ERROR_MESSAGE_BAD_PHASE,null);
+							}
+						}
+						
+						if( phase < 1 || phase > 6 ) {
+							return new CommandAnswer("ERROR_MESSAGE_BAD_PHASE",null);
+						}
+						
+						if( phase < 1 || phase > thisEvent.phase ) {
+							return new CommandAnswer("ERROR_MESSAGE_OUT_OF_PHASE",null);
+						}
+					}
+
+					/** Handle: %tb report cm HO3A */
+					
+					String terrName = params.get(2);
+					for( Integer i = 3; i != params.size(); ++i ) {
+						terrName += " "+params.get(i);
+					}
+					
+					List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, guildID, terrName, 0);
+					
+					if( myLog.size() == 0 ) {
+						return new CommandAnswer("ERROR_MESSAGE_NO_LOG",null);
+					}
+					
+					EmbedBuilder embed = new EmbedBuilder();					
+					embed.setAuthor("Territory Battle report ("+thisEvent.id+" - "+guildID+")","","");
+					embed.setTitle("Phase "+phase);
+					embed.setDescription("**-**");
+					embed.setColor(Color.BLUE);
+						
+					for( Integer l = 0; l != myLog.size(); ++l ) {		
+						String reportStr = myLog.get(l).report("cm");
+						reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
+						embed.addField(myLog.get(l).territoryID, reportStr, false);
+					}
+						
+					return new CommandAnswer(null,embed);					
+				
+				}
+
+				/** Handle: %tb report cm */
+				
+				List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, guildID, null, phase);
+				
+				if( myLog.size() == 0 ) {
+					return new CommandAnswer("ERROR_MESSAGE_NO_LOG",null);
+				}
+				
+				EmbedBuilder embed = new EmbedBuilder();					
+				embed.setAuthor("Territory Battle report ("+thisEvent.id+" - "+guildID+")","","");
+				embed.setTitle("Phase "+phase);
+				embed.setDescription("**-**");
+				embed.setColor(Color.BLUE);
+					
+				for( Integer l = 0; l != myLog.size(); ++l ) {		
+					String reportStr = myLog.get(l).report("cm");
+					reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
+					embed.addField(myLog.get(l).territoryID, reportStr, false);
+				}
+					
+				return new CommandAnswer(null,embed);				
+				
+			}
+
 			
 			/** Handle: %tb report HO2A
 			 *          %tb report Overlook
@@ -523,7 +696,7 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 		 * %tb log HO5C CM1 4 
 		 */
 		if(COMMAND_LOG.equalsIgnoreCase(params.get(0))) {
-			
+						
 			/** Handle: %tb log ... */
 			
 			TBEventLog lastTBLog = new TBEventLog();
@@ -632,7 +805,8 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 						
 					
 					//SM
-					String requestUser = receivedMessage.getAuthor().getId();
+					//String requestUser = receivedMessage.getAuthor().getId();					
+					String requestUser = receivedMessage.getAuthor().getName();
 					if( terrLog.SM1.indexOf(requestUser) >= 0 ) {						
 						
 						if( terrLog.SM1.get(terrLog.SM1.indexOf(requestUser)+1).trim().equals(newVal.toString().trim()) ) {
@@ -670,8 +844,9 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 					}
 					
 					//CM
-					String requestUser = receivedMessage.getAuthor().getId();
-					
+					//String requestUser = receivedMessage.getAuthor().getId();
+					String requestUser = receivedMessage.getAuthor().getName();
+
 					if( mNum == 1 && terrLog.CM1.contains(requestUser) || mNum == 2 && terrLog.CM2.contains(requestUser) ) {						
 						
 						String ALERT_UPDATE = "";

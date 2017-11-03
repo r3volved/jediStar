@@ -189,7 +189,7 @@ public class TBTerritoryLog {
 			starPoints += ptotal;
 			
 			reportStr += "\t\r\n";
-			reportStr += "__*Estimated points*__: "+NumberFormat.getIntegerInstance().format(ptotal)+"\r\n";
+			reportStr += "__*Estimated points*__: "+NumberFormat.getIntegerInstance().format(starPoints)+"\r\n";
 			
 			Integer stars = 0;
 			stars = starPoints >= (long) terr.starPoints.get(1) ? 1 : stars;
@@ -204,13 +204,13 @@ public class TBTerritoryLog {
 			
 		}		
 		
+		
 		if( type.equalsIgnoreCase(REPORT_PLATOONS) ) {
 			
 			char[] p = this.platoons.toCharArray();
 			reportStr += "**"+terr.territoryName+"**\r\n";
 			
 			long ptotal = getPlatoonTotal( this.platoons, terr );
-			starPoints += ptotal;
 			
 			reportStr += "```\r\n";
 			reportStr += "Platoons:\r\n";
@@ -226,16 +226,73 @@ public class TBTerritoryLog {
 			reportStr += "-------------------------\r\n";
 			reportStr += "Estimated points: "+NumberFormat.getIntegerInstance().format(ptotal)+"\r\n";			
 			reportStr += "```";
+			
 		}
 		
+
 		if( type.equalsIgnoreCase(REPORT_COMBAT_MISSIONS) ) {
 			
+			reportStr += "**"+terr.territoryName+"**\r\n";
 			
+			Integer missions = 1;
+			if( this.CM2 != null && this.CM2.size() > 0 ) { missions++; }
+			
+			for( Integer m = 1; m <= missions; ++m ) {
+
+				List<String> CM = m == 1 ? this.CM1 : this.CM2;
+				
+				if( CM == null || CM.size() == 0 ) {
+					reportStr += "```\r\n";
+					reportStr += "No logs\r\n";
+					reportStr += "```";
+					return reportStr; 
+				}
+
+				long total = this.getMissionTotal( CM, terr );
+
+				reportStr += "```\r\n";
+				reportStr += "Combat mission "+m+"\r\n";
+				reportStr += "Participation: "+String.valueOf(CM.size() / 2)+" member(s)\r\n";
+				for( Integer p = 0; p != CM.size(); p+=2 ) {
+					reportStr += p == 0 ? "" : ", ";
+					reportStr += CM.get(p).trim();
+				}
+				reportStr += "\r\n\r\n";
+				reportStr += "-------------------------\r\n";
+				reportStr += "Estimated points: "+NumberFormat.getIntegerInstance().format(total)+"\r\n";
+				reportStr += "```";
+				
+			}
+
 			
 		}
 		
 		if( type.equalsIgnoreCase(REPORT_SPECIAL_MISSION) ) {
-			
+
+			reportStr += "**"+terr.territoryName+"**\r\n";
+
+			if( this.SM1 == null || this.SM1.size() == 0 ) {
+				reportStr += "```\r\n";
+				reportStr += "No logs\r\n";
+				reportStr += "```";
+				return reportStr;
+			}
+
+			long total = this.getMissionTotal( this.SM1, terr );
+
+			reportStr += "```\r\n";
+			reportStr += "Special mission\r\n";
+			reportStr += "Participation: "+String.valueOf(this.SM1.size() / 2)+" member(s)\r\n";
+			for( Integer p = 0; p != this.SM1.size(); p+=2 ) {
+				reportStr += p == 0 ? "" : ", ";
+				reportStr += this.SM1.get(p).trim();
+			}
+			reportStr += "\r\n\r\n";
+			reportStr += "Rewards: "+terr.specialMission+"\r\n";
+			reportStr += "-------------------------\r\n";
+			reportStr += "Estimated points: "+NumberFormat.getIntegerInstance().format(total)+"\r\n";
+			reportStr += "```";
+				
 		}
 
 		return reportStr;

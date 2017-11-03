@@ -113,8 +113,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 	public void onMessageCreate(DiscordAPI api, Message receivedMessage) {
 		
 		String messageAsString = receivedMessage.getContent();
-		
-		
+				
 		//Si le message est vide ou ne commence pas par % : Ne rien faire.
 		if(messageAsString == null
 				|| !messageAsString.startsWith(PREFIXE_COMMANDES)) {

@@ -74,7 +74,9 @@ public class TerritoryBattleAssistant implements Runnable {
 
 			reset.scheduleAtFixedRate(new resetPhase(), timerInitDateTime.getTime(), 1000*60*60*24);
 			logger.info( "Next timer: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( timerInitDateTime.getTime() ) );
-					
+				
+			//this.sendAlerts(2);
+			
 			logger.info( this.threadName+" started and scheduled successfully");
 	        Thread.sleep(500);
 	    } catch(InterruptedException e) {
@@ -137,7 +139,7 @@ public class TerritoryBattleAssistant implements Runnable {
 		for( Integer t = 0; t < territories.size(); t++ ) {
 						
 			embed.setTitle(territories.get(t).territoryID+" : "+territories.get(t).territoryName);
-			embed.setDescription(territories.get(t).territoryDescription());
+			embed.setDescription("More info: %tb info "+territories.get(t).territoryID);
 			
 			Color eColor = territories.get(t).combatType == 2 ? Color.CYAN : Color.WHITE;
 			embed.setColor(eColor);
@@ -145,7 +147,24 @@ public class TerritoryBattleAssistant implements Runnable {
 
 		}
 		
-		String msg = "```css\r\n"+territories.get(0).tbName+"\r\nPhase "+phase+" has started```";
+		String msg = "```css\r\n";
+		msg += territories.get(0).tbName+"\r\n";
+		msg += "Phase "+phase+" has started\r\n";
+		msg += "\r\n";
+		msg += "[Info]\r\n";
+		msg += "%tb info phase <num>\r\n";
+		msg += "%tb info <territoryID|territoryName>\r\n";
+		msg += "\r\n";
+		msg += "[Log]\r\n";
+		msg += "%tb log platoon <num>\r\n";
+		msg += "%tb log <territoryID> [cm1|cm2|sm1] <tierCompleted>\r\n";
+		msg += "\r\n";
+		msg += "[Report]\r\n";
+		msg += "%tb report phase <num>\r\n";
+		msg += "%tb report platoon <num>\r\n";
+		msg += "%tb report <territoryID>\r\n";
+		msg += "%tb report [cm|sm]\r\n";
+		msg += "```";
 		
 		alert.put("username", "Territory Battle Assistant");
 		alert.put("content", msg);

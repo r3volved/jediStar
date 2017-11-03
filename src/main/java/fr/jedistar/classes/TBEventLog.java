@@ -174,7 +174,7 @@ public class TBEventLog {
 	    		
 	    	}   
 
-	    	logger.info("Found phase: "+phase);
+//	    	logger.info("Found phase: "+phase);
 	    	return true;
 	    }
 	}
