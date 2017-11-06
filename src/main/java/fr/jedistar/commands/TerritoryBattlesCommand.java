@@ -6,38 +6,25 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vdurmont.emoji.EmojiManager;
-
 import org.apache.commons.lang3.StringUtils;
 
 import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.entities.Server;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
-import de.btobastian.javacord.entities.message.impl.ImplReaction;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
-import fr.jedistar.classes.Channel;
-import fr.jedistar.classes.TBEventLog;
-import fr.jedistar.classes.TBTerritoryLog;
 import fr.jedistar.classes.Territory;
 import fr.jedistar.commands.helper.GalaticPowerToStars;
 import fr.jedistar.formats.CommandAnswer;
-import fr.jedistar.formats.PendingAction;
-import fr.jedistar.listener.JediStarBotReactionAddListener;
 import fr.jedistar.utils.GuildUnitsSWGOHGGDataParser;
 
 public class TerritoryBattlesCommand implements JediStarBotCommand {

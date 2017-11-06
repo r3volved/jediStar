@@ -92,9 +92,12 @@ public class Main {
 			e.printStackTrace();
 		}
 
-		logger.info("Launching bot with token -" + token + "-");
+		logger.info("Creating bot with token -" + token + "-");
 
 		JediStarBot bot = new JediStarBot(token);
+		
+		logger.info("Launching bot with token -" + token + "-");
+
 		bot.connect();
 				
 		logger.info("Connected");

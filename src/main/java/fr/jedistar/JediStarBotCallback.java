@@ -3,11 +3,9 @@ package fr.jedistar;
 import com.google.common.util.concurrent.FutureCallback;
 
 import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.ImplDiscordAPI;
-import de.btobastian.javacord.entities.impl.ImplUser;
 import fr.jedistar.listener.JediStarBotMessageListener;
-import fr.jedistar.listener.JediStarBotMultiReactionAddListener;
 import fr.jedistar.listener.JediStarBotReactionAddListener;
+import fr.jedistar.listener.JediStarBotMultiReactionAddListener;
 
 public class JediStarBotCallback implements FutureCallback<DiscordAPI> {
 

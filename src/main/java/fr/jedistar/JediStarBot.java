@@ -7,6 +7,7 @@ import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.impl.ImplUser;
 import fr.jedistar.utils.TerritoryBattleAssistant;
 
+
 public class JediStarBot {
 
 	String token;
@@ -19,17 +20,19 @@ public class JediStarBot {
 		token = inToken;
 
 		api = Javacord.getApi(token, true);
-
+		
 		botCallback = new JediStarBotCallback();
 
-		tba = new TerritoryBattleAssistant( "TBAssistant");
+		tba = new TerritoryBattleAssistant( "TBAssistant" );
+		
 	}
 
 	public void connect() {
+		
 		api.connect(botCallback);
 
 	    tba.start(api);
-
+	    
 	}
 	
 

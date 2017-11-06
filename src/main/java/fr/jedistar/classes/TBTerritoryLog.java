@@ -11,9 +11,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vdurmont.emoji.EmojiManager;
-
-import de.btobastian.javacord.entities.message.impl.ImplReaction;
 import fr.jedistar.StaticVars;
 
 public class TBTerritoryLog {

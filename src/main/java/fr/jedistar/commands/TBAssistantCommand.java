@@ -17,8 +17,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.print.DocFlavor.STRING;
-
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +27,9 @@ import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.impl.ImplUser;
 import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.Reaction;
-import de.btobastian.javacord.entities.message.embed.Embed;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import de.btobastian.javacord.entities.message.impl.ImplReaction;
-import fr.jedistar.JediStarBot;
+
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
 import fr.jedistar.classes.Channel;
@@ -883,8 +879,6 @@ public class TBAssistantCommand implements JediStarBotCommand {
 	 */
 	public void executeMissionUpdate(ImplUser user, ImplReaction reaction, Integer logID, String messageID, String missionType) {
 
-		System.out.println("Executing missions");
-
 		List<String> emojis = new ArrayList<String>();
 		emojis.add(EmojiManager.getForAlias("one").getUnicode());
 		emojis.add(EmojiManager.getForAlias("two").getUnicode());
@@ -899,23 +893,20 @@ public class TBAssistantCommand implements JediStarBotCommand {
 
 		Channel channel = new Channel(reaction.getMessage().getChannelReceiver().getId());
 		String terrID = reaction.getMessage().getContent().substring(0, 4);
-		
 		TBTerritoryLog log = new TBTerritoryLog(logID, channel.guildID, terrID);
 		
-		logger.info( log.logID.toString()+"."+log.guildID.toString()+"."+log.territoryID+"."+missionType+"."+reaction.getUnicodeEmoji() );
-		
-		Integer tier = emojis.indexOf(reaction.getUnicodeEmoji())+1;
-		
+				
 		/** Handle: %tb log <terrID> [cm1|cm2|sm1] <num> */
 		
 		List<String> mission = missionType.equalsIgnoreCase("sm") ? log.SM1 : log.CM1;
 		mission = missionType.equalsIgnoreCase("cm2") ? log.CM2 : mission;
 		
 		String player = user.getName();
-		System.out.println( player+"\r\n"+mission );
+		Integer tier = emojis.indexOf(reaction.getUnicodeEmoji())+1;
+		
+		logger.info( player+" : "+log.logID.toString()+"."+log.guildID.toString()+"."+log.territoryID+"."+missionType+"."+reaction.getUnicodeEmoji() );
 
 		Message remsg;
-		
 		try { 
 			
 			Thread.sleep(5000);
@@ -924,7 +915,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 				
 				Thread.sleep(500);
 				
-				remsg = reaction.getMessage().getChannelReceiver().sendMessage("<@!"+user.getId()+"> already logged").get(1, TimeUnit.MINUTES);
+				//remsg = reaction.getMessage().getChannelReceiver().sendMessage("<@!"+user.getId()+"> already logged").get(1, TimeUnit.MINUTES);
 				return;
 			}
 				
@@ -936,7 +927,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 				
 					Thread.sleep(500);
 					
-					remsg = reaction.getMessage().getChannelReceiver().sendMessage("1-3 only").get(1, TimeUnit.MINUTES);
+					//remsg = reaction.getMessage().getChannelReceiver().sendMessage("1-3 only").get(1, TimeUnit.MINUTES);
 					return; 
 				}
 				log.SM1 = mission;
@@ -945,7 +936,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					
 					Thread.sleep(500);
 					
-					remsg = reaction.getMessage().getChannelReceiver().sendMessage("1-3 only").get(1, TimeUnit.MINUTES);
+					//remsg = reaction.getMessage().getChannelReceiver().sendMessage("1-3 only").get(1, TimeUnit.MINUTES);
 					return; 
 				}
 				log.CM1 = mission;
@@ -954,7 +945,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					
 					Thread.sleep(500);
 					
-					remsg = reaction.getMessage().getChannelReceiver().sendMessage("1-3 only").get(1, TimeUnit.MINUTES);
+					//remsg = reaction.getMessage().getChannelReceiver().sendMessage("1-3 only").get(1, TimeUnit.MINUTES);
 					return; 
 				}
 				log.CM2 = mission;
@@ -964,11 +955,9 @@ public class TBAssistantCommand implements JediStarBotCommand {
 				
 				Thread.sleep(500);
 				
-				remsg = reaction.getMessage().getChannelReceiver().sendMessage("could not log - "+player+" - "+tier.toString()).get(1, TimeUnit.MINUTES);
+				//remsg = reaction.getMessage().getChannelReceiver().sendMessage("could not log - "+player+" - "+tier.toString()).get(1, TimeUnit.MINUTES);
 				return;
 			} 
-			
-			System.out.println("Here somehow");
 			
 			Thread.sleep(500);
 			
@@ -989,8 +978,6 @@ public class TBAssistantCommand implements JediStarBotCommand {
 	 */
 	public void executePlatoonUpdate(User user, ImplReaction reaction, Integer logID, String messageID) {
 
-		System.out.println("Executing platoons");
-		
 		List<String> emojis = new ArrayList<String>();
 		emojis.add(EmojiManager.getForAlias("one").getUnicode());
 		emojis.add(EmojiManager.getForAlias("two").getUnicode());
@@ -1007,9 +994,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 		String terrID = reaction.getMessage().getContent().substring(0, 4);
 		
 		TBTerritoryLog log = new TBTerritoryLog(logID, channel.guildID, terrID);
-		
-		logger.info( log.logID.toString()+"."+log.guildID.toString()+"."+log.territoryID+"."+reaction.getUnicodeEmoji() );
-		
+				
 		char flag = 'Y';
 		Integer platoon = emojis.indexOf(reaction.getUnicodeEmoji())+1;
 		
@@ -1021,10 +1006,14 @@ public class TBAssistantCommand implements JediStarBotCommand {
 			return;
 		}
 		
+		String player = user.getName();
+		logger.info( player+" : "+log.logID.toString()+"."+log.guildID.toString()+"."+log.territoryID+".platoon."+reaction.getUnicodeEmoji() );
+
 		platoons[platoon-1] = flag;
 		log.platoons = String.copyValueOf(platoons);
 		log.saveLog();
-		reaction.getMessage().getReceiver().sendMessage(log.territoryID+" : Platoon "+String.valueOf(platoon)+" has been logged as full");
+		
+		reaction.getMessage().getChannelReceiver().sendMessage(log.territoryID+" : Platoon "+String.valueOf(platoon)+" has been logged as full");
 	
 	}
 

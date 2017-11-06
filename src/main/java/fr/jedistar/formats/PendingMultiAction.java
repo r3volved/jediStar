@@ -1,8 +1,6 @@
 package fr.jedistar.formats;
 
-import java.awt.List;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -61,8 +59,6 @@ public class PendingMultiAction {
 	
 	public void doAction(User user, Reaction reaction) {
 		try {
-			ArrayList<Class<?>> paramsTypes = new ArrayList<Class<?>>();
-			
 			Object[] params = new Object[args.length+2];
 			
 			params[0] = user;

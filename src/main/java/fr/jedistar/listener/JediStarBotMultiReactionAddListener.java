@@ -7,7 +7,6 @@ import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Reaction;
 import de.btobastian.javacord.listener.message.ReactionAddListener;
-import fr.jedistar.formats.PendingAction;
 import fr.jedistar.formats.PendingMultiAction;
 
 public class JediStarBotMultiReactionAddListener implements ReactionAddListener {

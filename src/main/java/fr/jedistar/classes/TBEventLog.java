@@ -140,8 +140,8 @@ public class TBEventLog {
 	    	//today.set(Calendar.HOUR, 17);
 	    	//today.set(Calendar.MINUTE, 0);
 	    	//today.set(Calendar.SECOND, 0);
-	    	logger.info( "today: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( today.getTime() ) );
-	    	logger.info( "log  : "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( this.date.getTime() ) );
+	    	//logger.info( "today: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( today.getTime() ) );
+	    	//logger.info( "log  : "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( this.date.getTime() ) );
 	    	/* ---- */
 	    	
 	    	Integer phase = 0;
@@ -179,7 +179,7 @@ public class TBEventLog {
 	    		
 	    	}   
 
-	    	logger.info("Found phase: "+phase);
+	    	//logger.info("Found phase: "+phase);
 	    	return true;
 	    }
 	}

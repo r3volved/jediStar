@@ -12,10 +12,6 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.text.SimpleDateFormat;
 
 import org.apache.http.HttpResponse;
@@ -28,20 +24,13 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vdurmont.emoji.EmojiManager;
-
 import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
-import de.btobastian.javacord.exceptions.PermissionsException;
 import fr.jedistar.Main;
 import fr.jedistar.StaticVars;
 import fr.jedistar.classes.Channel;
 import fr.jedistar.classes.TBEventLog;
 import fr.jedistar.classes.Territory;
-import fr.jedistar.formats.CommandAnswer;
-import fr.jedistar.formats.PendingAction;
-import fr.jedistar.listener.JediStarBotReactionAddListener;
 
 public class TerritoryBattleAssistant implements Runnable {
 
@@ -64,7 +53,7 @@ public class TerritoryBattleAssistant implements Runnable {
 		this.eventTimeZone = TimeZone.getTimeZone("UTC");
 		this.eventLog = new TBEventLog(0,Calendar.getInstance(),0,"Hoth - Imperial Invasion");
 		this.threadName = name;		
-		logger.info("Launching "+this.threadName);
+		logger.info("Creating "+this.threadName);
 
 	}
 	
@@ -80,14 +69,13 @@ public class TerritoryBattleAssistant implements Runnable {
 
 	
 			//this.sendAlerts(2);
-			this.eventLog.date.add(Calendar.SECOND, 5);
-			reset.scheduleAtFixedRate(new doTriggers(), this.eventLog.date.getTime(), 1000*60*60*24);
+			//this.eventLog.date.add(Calendar.SECOND, 5);
+			//reset.scheduleAtFixedRate(new doTriggers(), this.eventLog.date.getTime(), 1000*60*60*24);
 
 			
 			//Ensure the timer start date has the time set to 15:00 UTC:+0:00
 			Calendar timerInitDateTime = this.eventLog.date;
 			timerInitDateTime.setTimeZone(this.eventTimeZone);
-			timerInitDateTime.add(Calendar.DATE, 1);
 			timerInitDateTime.set(Calendar.HOUR_OF_DAY, 17);
 			timerInitDateTime.set(Calendar.MINUTE, 0);
 			timerInitDateTime.set(Calendar.SECOND, 0);
@@ -107,7 +95,9 @@ public class TerritoryBattleAssistant implements Runnable {
 	  if (t == null) {
 		 this.api = api;
          t = new Thread (this, threadName);
-         t.start ();
+         
+         logger.info("Launching "+this.threadName);
+         t.start ();         
       }
 	}
 	
@@ -135,7 +125,6 @@ public class TerritoryBattleAssistant implements Runnable {
             	if( eventLog.phase > 0 ) {
             		logger.debug( "Phase "+eventLog.phase+" started");
             		eventLog.date.add(Calendar.DATE, 1);            		
-//            		//sendAlerts( eventLog.phase );
             		sendTriggers( eventLog.phase );
             		
             	}
@@ -184,63 +173,6 @@ public class TerritoryBattleAssistant implements Runnable {
 				logger.error("channel send: "+e.getMessage());
 			}
 
-		}
-		
-		return true;
-	}
-
-	
-	public boolean sendAlerts( Integer phase ) {
-		List<Channel> activeWebhooks = getWebhooks();
-		List<Territory> territories = getTerritories(phase);
-		
-		EmbedBuilder embed = new EmbedBuilder();
-		JSONArray embeds = new JSONArray();
-		JSONObject alert = new JSONObject();
-				
-		//ADD TERRITORY BATTLE ALERTS
-		for( Integer t = 0; t < territories.size(); t++ ) {
-						
-			embed.setTitle(territories.get(t).territoryID+" : "+territories.get(t).territoryName);
-			embed.setDescription("More info: %tb info "+territories.get(t).territoryID);
-			
-			Color eColor = territories.get(t).combatType == 2 ? Color.CYAN : Color.WHITE;
-			embed.setColor(eColor);
-			embeds.put(embed.toJSONObject());
-
-		}
-		
-		String msg = "```css\r\n";
-		msg += territories.get(0).tbName+"\r\n";
-		msg += "Phase "+phase+" has started\r\n";
-		msg += "\r\n";
-		msg += "[Info]\r\n";
-		msg += "%tb info phase <num>\r\n";
-		msg += "%tb info <territoryID|territoryName>\r\n";
-		msg += "\r\n";
-		msg += "[Log]\r\n";
-		msg += "%tb log platoon <num>\r\n";
-		msg += "%tb log <territoryID> [cm1|cm2|sm1] <tierCompleted>\r\n";
-		msg += "\r\n";
-		msg += "[Report]\r\n";
-		msg += "%tb report phase <num>\r\n";
-		msg += "%tb report platoon <num>\r\n";
-		msg += "%tb report <territoryID>\r\n";
-		msg += "%tb report [cm|sm]\r\n";
-		msg += "```";
-		
-		alert.put("username", "Territory Battle Assistant");
-		alert.put("content", msg);
-		alert.put("embeds", embeds );
-
-		
-		
-		for( Integer i = 0; i != activeWebhooks.size(); ++i ) {
-			try { 
-				sendPOST( activeWebhooks.get(i).webhook, alert );				
-			} catch(IOException e) {
-				logger.error("channel send: "+e.getMessage());
-			}
 		}
 		
 		return true;

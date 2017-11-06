@@ -11,19 +11,11 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vdurmont.emoji.EmojiManager;
-
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.impl.ImplReaction;
-
 import fr.jedistar.commands.SetUpCommand;
 import fr.jedistar.StaticVars;
-import fr.jedistar.formats.CommandAnswer;
-import fr.jedistar.formats.PendingAction;
-import fr.jedistar.listener.JediStarBotReactionAddListener;
 
 /**
- * @author shittybill
+ * @author Nathan
  *
  */
 public class Channel {
