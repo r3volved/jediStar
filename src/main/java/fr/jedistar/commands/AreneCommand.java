@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import fr.jedistar.JediStarBotCommand;
@@ -73,7 +74,7 @@ public class AreneCommand implements JediStarBotCommand {
 		JSONObject parameters = StaticVars.jsonSettings;
 		ERROR_MESSAGE = parameters.getString(JSON_ERROR_MESSAGE);
 
-		//Paramètres propres à l'équilibrage
+		//Paramï¿½tres propres ï¿½ l'ï¿½quilibrage
 		JSONObject AreneParams = parameters.getJSONObject(JSON_ARENE);
 
 		COMMAND = AreneParams.getString(JSON_ARENE_COMMAND);
@@ -93,7 +94,7 @@ public class AreneCommand implements JediStarBotCommand {
 
 	}
 
-	public CommandAnswer answer(List<String> params, Message messageRecu, boolean isAdmin) {
+	public CommandAnswer answer(DiscordAPI api, List<String> params, Message messageRecu, boolean isAdmin) {
 		
 		isApproximation = false;
 		if(params.size() == 0) {

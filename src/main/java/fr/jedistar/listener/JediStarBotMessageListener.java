@@ -63,7 +63,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 	
 	public JediStarBotMessageListener() {
 		super();
-		
+				
 		commandsMap = new HashMap<String,JediStarBotCommand>();
 		
 		//AJOUTER ICI DE NOUVELLES COMMANDES
@@ -72,6 +72,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 		AreneCommand arene = new AreneCommand();
 		SetUpCommand setup = new SetUpCommand();
 		TerritoryBattlesCommand tb = new TerritoryBattlesCommand();
+		TBAssistantCommand tba = new TBAssistantCommand();
         HelpCommand help = new HelpCommand();
 
 		commandsMap.put(raid.getCommand(), raid);
@@ -79,6 +80,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 		commandsMap.put(arene.getCommand(), arene);
 		commandsMap.put(setup.getCommand(),setup);
 		commandsMap.put(tb.getCommand(), tb);
+		commandsMap.put(tba.getCommand(), tba);
         commandsMap.put(help.getCommand(), help);
 
 		//Lecture du Json
@@ -110,13 +112,15 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 		}
 	}
 	
-	public void onMessageCreate(DiscordAPI api, Message receivedMessage) {
-		
+	public void onMessageCreate(DiscordAPI api, Message receivedMessage) {	
+	
 		String messageAsString = receivedMessage.getContent();
-				
+
+//		logger.info( "Author: "+receivedMessage.getAuthor().getName() );
+		if( receivedMessage.getAuthor().isYourself() ) { return; }
+		
 		//Si le message est vide ou ne commence pas par % : Ne rien faire.
-		if(messageAsString == null
-				|| !messageAsString.startsWith(PREFIXE_COMMANDES)) {
+		if(messageAsString == null || !messageAsString.startsWith(PREFIXE_COMMANDES)) {
 			return;
 		}
 		
@@ -156,7 +160,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 
 		boolean isAdmin = isAdmin(receivedMessage);
 		
-		CommandAnswer answer = botCommand.answer(messageParts,receivedMessage,isAdmin);
+		CommandAnswer answer = botCommand.answer(api,messageParts,receivedMessage,isAdmin);
 		
 		if(answer == null) {
 			return;
@@ -195,7 +199,6 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 			}
 			
 		}
-
 	}
 
 	private boolean isAdmin(Message messageRecu) {
@@ -265,4 +268,6 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 			}
 		}
 	}
+	
+	
 }

@@ -11,6 +11,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vdurmont.emoji.EmojiManager;
+
+import de.btobastian.javacord.entities.message.impl.ImplReaction;
 import fr.jedistar.StaticVars;
 
 public class TBTerritoryLog {
@@ -83,11 +86,18 @@ public class TBTerritoryLog {
 
 	public TBTerritoryLog( Integer ID, Integer guildID, String territoryID ) {
 		
-		this.logID=ID;
-		this.guildID=guildID;
-		this.territoryID=territoryID;
-		this.saved = this.populateByPK( ID, guildID, territoryID );
-
+		try {
+			this.logID = ID;
+			this.guildID = guildID;
+			this.territoryID = territoryID;			
+			this.saved = this.populateByPK( ID, guildID, territoryID );
+			if( this.phase == 0 ) {
+				this.phase = Integer.parseInt(this.territoryID.substring(2, 3));
+			}
+		} catch(NumberFormatException e) {
+			logger.error(e.getMessage());
+		}
+			
 	}
 	
 	

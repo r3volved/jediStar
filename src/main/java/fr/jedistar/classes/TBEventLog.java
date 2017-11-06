@@ -134,24 +134,22 @@ public class TBEventLog {
 	    public boolean calculateToday(TimeZone eventTimeZone) {
 	  
 	    	Calendar today = Calendar.getInstance(eventTimeZone);
-	    	today.set(Calendar.HOUR, 17);
-	    	today.set(Calendar.MINUTE, 0);
-	    	today.set(Calendar.SECOND, 0);
 	    	
 	    	/* SET TEST today */
 	    	//today.add(Calendar.DAY_OF_YEAR, 14);
+	    	//today.set(Calendar.HOUR, 17);
+	    	//today.set(Calendar.MINUTE, 0);
+	    	//today.set(Calendar.SECOND, 0);
+	    	logger.info( "today: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( today.getTime() ) );
+	    	logger.info( "log  : "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( this.date.getTime() ) );
 	    	/* ---- */
 	    	
 	    	Integer phase = 0;
 	    	
-//	    	logger.info( "today: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( today.getTime() ) );
-//	    	logger.info( "log  : "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( this.date.getTime() ) );
-	    	
 	    	if( today.getTimeInMillis() > this.date.getTimeInMillis() ) {
 
 	    		Long diff = today.getTimeInMillis() - this.date.getTimeInMillis();
-	    		phase = Integer.parseInt( diff.toString() );
-	    		phase = phase / 1000 / 60 / 60 / 24; 
+	    		phase = Integer.parseInt( String.valueOf(diff / 1000 / 60 / 60 / 24) ) + 1; 
 
 	    		if( phase <= 6 ) {
 
@@ -181,7 +179,7 @@ public class TBEventLog {
 	    		
 	    	}   
 
-//	    	logger.info("Found phase: "+phase);
+	    	logger.info("Found phase: "+phase);
 	    	return true;
 	    }
 	}

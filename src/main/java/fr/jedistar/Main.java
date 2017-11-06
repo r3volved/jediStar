@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.btobastian.javacord.entities.User;
 import fr.jedistar.commands.ModsCommand;
 import fr.jedistar.utils.TerritoryBattleAssistant;
 
@@ -30,7 +31,8 @@ public class Main {
 	private static String url;
 	private static String user;
 	private static String passwd;
-
+	
+	
 	public static void main(String... args) {
 
 		String parametersFilePath = "";
@@ -94,10 +96,7 @@ public class Main {
 
 		JediStarBot bot = new JediStarBot(token);
 		bot.connect();
-
+				
 		logger.info("Connected");
-		
-		TerritoryBattleAssistant tba = new TerritoryBattleAssistant( "TBAssistant");
-	    tba.start();
 	}
 }

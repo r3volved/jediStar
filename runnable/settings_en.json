@@ -176,9 +176,7 @@
             "ships":"ships",
             "strategy":"gp",
             "info":"info",
-            "phase":"phase",
-            "log":"log",
-            "report":"report"
+            "phase":"phase"
         },
         
         "help":"Possible command :\r\n%tb platoon chars aayla 5\\*\r\n%tb platoon ships ghost 5\\*\r\n%tb gp",
@@ -188,6 +186,48 @@
             "noUnitFound":"No one in your guild has this unit at the requested rarity level",
             "maxStarResult" : "GP Characters : %d M\r\nGP Ships : %d M\r\nTOTAL GP : %d M\r\n------\r\nMaximum achievable from air : %d :star:\r\nMaximum achievable from ground : %d :star:\r\nTOTAL : %d :star:\r\n",
             "maxStarTitle" : "Maximum achievable with all platoons filled and perfect combats missions for 50 players",
+            "channelSetupOK":"Channel setup successful",
+            "cancelAction":"OK, canceling."
+        },
+        
+        "errorMessages":{
+            "noChannel":"This command must be typed from a server (not through a private message)",
+            "noGuildNumber":"No guild associated to this Discord channel. Ask your bot admins to run *%setup*",
+            "noTerritory":"I cannot find a territory with that ID or that name",
+            "noTerritoryInPhase":"You can only log against the current phase",
+            "badPhase":"Phase lookup must include a number between 1 and 6",
+            "badMission":"This mission type or number wasn't recognized. Try CM1 for Combat mission 1 or SM1 for Special mission 1",
+            "commandError":"This command is not recognized",
+            "paramsNumber":"Parameters missing",
+            "incorrectNumber":"We did not recognized a number",
+            "dbUpdateError":"Database update error ",
+            "dbNoCurrentTB":"**This command must be run during a Territory battle phase**\r\nThe next territory battle is scheduled to start on: %s",
+            "tooMuchResults":"Too many results, try limiting your search to one ofthe following chararacters :\r\n",
+            "sqlError":"An error occurred while accessing the database"
+        }
+    },
+
+    "tbaCommandParameters":{
+        
+        "commands":{
+            "base":"tba",
+            "alert":"alert",
+            "start":"start",
+            "finish":"finish",
+            "log":"log",
+            "report":"report",
+            "phase":"phase",
+            "toggleON":"on",
+            "toggleOFF":"off"
+        },
+        
+        "help":"",
+        
+        "messages":{
+            "confirmUpdateChannel":"Are you sure you want to update this channel ?",
+            "warnUpdateGuild":"**This Discord channel is already associated with guild number %d ** \r\n",
+            "warnUpdateTBAssistant":"**Toggling the Territory Battle Assistant will deactivate it in all your other guild channels ** \r\n",
+            "warnUpdateWebhook":"**This Discord channel already has a webhook ** \r\n",
             "channelSetupOK":"Channel setup successful",
             "cancelAction":"OK, canceling.",
             "alertUpdateTerrLog":"Already exists as %s ...update to %s ?"

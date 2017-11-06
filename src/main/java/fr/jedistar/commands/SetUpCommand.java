@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vdurmont.emoji.EmojiManager;
 
+import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.Embed;
 import de.btobastian.javacord.entities.message.impl.ImplReaction;
@@ -153,7 +154,7 @@ public class SetUpCommand implements JediStarBotCommand {
 
 
 	@Override
-	public CommandAnswer answer(List<String> params, Message receivedMessage, boolean isAdmin) {
+	public CommandAnswer answer(DiscordAPI api, List<String> params, Message receivedMessage, boolean isAdmin) {
 
 		//Kick out if not admin
 		if(!isAdmin) {

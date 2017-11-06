@@ -2,6 +2,7 @@ package fr.jedistar;
 
 import java.util.List;
 
+import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.Channel;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Message;
@@ -11,5 +12,5 @@ public interface JediStarBotCommand {
 
 	public String getCommand();
 
-	public CommandAnswer answer(List<String> params, Message receivedMessage, boolean isAdmin);
+	public CommandAnswer answer(DiscordAPI api, List<String> params, Message receivedMessage, boolean isAdmin);
 }

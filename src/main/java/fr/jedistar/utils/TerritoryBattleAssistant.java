@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.text.SimpleDateFormat;
 
 import org.apache.http.HttpResponse;
@@ -24,13 +28,20 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
+import com.vdurmont.emoji.EmojiManager;
 
+import de.btobastian.javacord.DiscordAPI;
+import de.btobastian.javacord.entities.message.Message;
+import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
+import de.btobastian.javacord.exceptions.PermissionsException;
 import fr.jedistar.Main;
 import fr.jedistar.StaticVars;
 import fr.jedistar.classes.Channel;
 import fr.jedistar.classes.TBEventLog;
 import fr.jedistar.classes.Territory;
+import fr.jedistar.formats.CommandAnswer;
+import fr.jedistar.formats.PendingAction;
+import fr.jedistar.listener.JediStarBotReactionAddListener;
 
 public class TerritoryBattleAssistant implements Runnable {
 
@@ -42,6 +53,7 @@ public class TerritoryBattleAssistant implements Runnable {
 	private Thread t;
 	private String threadName;
 	private Timer reset = new Timer();
+	DiscordAPI api;
 	
 	public TBEventLog eventLog;	
 	public TimeZone eventTimeZone;
@@ -64,10 +76,18 @@ public class TerritoryBattleAssistant implements Runnable {
 
 			this.eventLog.loadLastEventLog();
 			this.eventLog.calculateToday(this.eventTimeZone);
+			logger.info("Found phase: "+this.eventLog.phase);
+
+	
+			//this.sendAlerts(2);
+			this.eventLog.date.add(Calendar.SECOND, 5);
+			reset.scheduleAtFixedRate(new doTriggers(), this.eventLog.date.getTime(), 1000*60*60*24);
+
 			
 			//Ensure the timer start date has the time set to 15:00 UTC:+0:00
 			Calendar timerInitDateTime = this.eventLog.date;
 			timerInitDateTime.setTimeZone(this.eventTimeZone);
+			timerInitDateTime.add(Calendar.DATE, 1);
 			timerInitDateTime.set(Calendar.HOUR_OF_DAY, 17);
 			timerInitDateTime.set(Calendar.MINUTE, 0);
 			timerInitDateTime.set(Calendar.SECOND, 0);
@@ -75,8 +95,6 @@ public class TerritoryBattleAssistant implements Runnable {
 			reset.scheduleAtFixedRate(new resetPhase(), timerInitDateTime.getTime(), 1000*60*60*24);
 			logger.info( "Next timer: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( timerInitDateTime.getTime() ) );
 				
-			//this.sendAlerts(2);
-			
 			logger.info( this.threadName+" started and scheduled successfully");
 	        Thread.sleep(500);
 	    } catch(InterruptedException e) {
@@ -85,8 +103,9 @@ public class TerritoryBattleAssistant implements Runnable {
 	    }  
 	}
 	
-	public void start() {
+	public void start(DiscordAPI api) {
 	  if (t == null) {
+		 this.api = api;
          t = new Thread (this, threadName);
          t.start ();
       }
@@ -101,7 +120,7 @@ public class TerritoryBattleAssistant implements Runnable {
             	if( ++eventLog.phase > 6 ) {
 
             		//TB HAS ENDED, GET THE COOLDOWN
-            		Integer offset = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == 0 ? 3 : 4;
+            		Integer offset = Calendar.getInstance(TimeZone.getDefault()).get(Calendar.DAY_OF_WEEK) == 0 ? 3 : 4;
             		eventLog.date.add(Calendar.DATE, offset);
             		eventLog.phase = 0;
             		
@@ -116,7 +135,8 @@ public class TerritoryBattleAssistant implements Runnable {
             	if( eventLog.phase > 0 ) {
             		logger.debug( "Phase "+eventLog.phase+" started");
             		eventLog.date.add(Calendar.DATE, 1);            		
-            		sendAlerts( eventLog.phase );
+//            		//sendAlerts( eventLog.phase );
+            		sendTriggers( eventLog.phase );
             		
             	}
             	
@@ -126,6 +146,49 @@ public class TerritoryBattleAssistant implements Runnable {
             }
 		}
 	}
+
+	private class doTriggers extends TimerTask {
+		@Override
+		public void run() {
+
+			sendTriggers( eventLog.phase );
+		}
+	}
+	
+	
+	public boolean sendTriggers( Integer phase ) {
+		List<Channel> activeChannels = getWebhooks();
+		EmbedBuilder embed = new EmbedBuilder();
+		JSONArray embeds = new JSONArray();
+		JSONObject alert = new JSONObject();
+
+		embed.setTitle("Territory Battle - Phase "+phase+" has started");
+		embed.setDescription("__For more information about this phase, try__:\r\n*%tb info phase "+phase+"*\r\n\r\n__To see progress reports, try__:\r\n*%tba report platoons*\r\n*%tba report cm*\r\n*%tba report sm*");
+		
+		Color eColor = Color.RED;
+		embed.setColor(eColor);
+		embeds.put(embed.toJSONObject());
+
+		
+		String msg = "%tba alert platoons "+this.eventLog.phase;
+		alert.put("username", "Territory Battle Assistant");
+		alert.put("content", msg);
+		alert.put("embeds", embeds );
+
+
+		for( Integer i = 0; i != activeChannels.size(); ++i ) {
+			try { 
+				sendPOST( activeChannels.get(i).webhook, alert );
+				Thread.sleep(500);
+			} catch(InterruptedException | IOException e) {
+				logger.error("channel send: "+e.getMessage());
+			}
+
+		}
+		
+		return true;
+	}
+
 	
 	public boolean sendAlerts( Integer phase ) {
 		List<Channel> activeWebhooks = getWebhooks();
@@ -170,6 +233,8 @@ public class TerritoryBattleAssistant implements Runnable {
 		alert.put("content", msg);
 		alert.put("embeds", embeds );
 
+		
+		
 		for( Integer i = 0; i != activeWebhooks.size(); ++i ) {
 			try { 
 				sendPOST( activeWebhooks.get(i).webhook, alert );				

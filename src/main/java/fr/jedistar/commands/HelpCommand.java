@@ -1,5 +1,6 @@
 package fr.jedistar.commands;
 
+import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.message.Message;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
@@ -91,7 +92,7 @@ public class HelpCommand implements JediStarBotCommand {
 
 
     @Override
-    public CommandAnswer answer(List<String> params, Message messageRecu, boolean isAdmin) {
+    public CommandAnswer answer(DiscordAPI api, List<String> params, Message messageRecu, boolean isAdmin) {
         CommandAnswer response = new CommandAnswer("", null);
         try {
             if(params.size() == 0){
