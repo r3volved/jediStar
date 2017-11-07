@@ -31,6 +31,7 @@ public class Territory {
 	  public List<String> affectedTerritories = new ArrayList<String>();
 	  public List<String> requiredUnits = new ArrayList<String>();
 	  public String specialMission;
+	  public Integer specialPoints;
 	  public Integer combatMissions;
 	  public List<Integer> missionPoints = new ArrayList<Integer>();
 	  public List<Integer> platoonPoints = new ArrayList<Integer>();
@@ -44,7 +45,7 @@ public class Territory {
 		  
 	  }
 	  
-	  public Territory(String territoryID,String territoryName,String tbName,Integer phase,Integer combatType,Integer starPoints1,Integer starPoints2,Integer starPoints3,String ability,String affectedTerritories,String requiredUnits,String specialMission,Integer combatMissions,Integer missionPoints1,Integer missionPoints2,Integer missionPoints3,Integer missionPoints4,Integer missionPoints5,Integer missionPoints6,Integer platoonPoints1,Integer platoonPoints2,Integer platoonPoints3,Integer platoonPoints4,Integer platoonPoints5,Integer platoonPoints6,Integer minDeployStar1,Integer minDeployStar2,Integer minDeployStar3,Integer minGPStar3,String notes) {
+	  public Territory(String territoryID,String territoryName,String tbName,Integer phase,Integer combatType,Integer starPoints1,Integer starPoints2,Integer starPoints3,String ability,String affectedTerritories,String requiredUnits,String specialMission,Integer specialPoints,Integer combatMissions,Integer missionPoints1,Integer missionPoints2,Integer missionPoints3,Integer missionPoints4,Integer missionPoints5,Integer missionPoints6,Integer platoonPoints1,Integer platoonPoints2,Integer platoonPoints3,Integer platoonPoints4,Integer platoonPoints5,Integer platoonPoints6,Integer minDeployStar1,Integer minDeployStar2,Integer minDeployStar3,Integer minGPStar3,String notes) {
 
 		  this.territoryID=territoryID;
 		  this.territoryName=territoryName;
@@ -72,6 +73,7 @@ public class Territory {
 		  }
 		  
 		  this.specialMission=specialMission;
+		  this.specialPoints=specialPoints;
 		  this.combatMissions=combatMissions;
 		  this.missionPoints.add(0);
 		  this.missionPoints.add(missionPoints1);
@@ -226,6 +228,7 @@ public class Territory {
 				  }
 				  
 				  this.specialMission=rs.getString("specialMission");
+				  this.specialPoints=rs.getInt("specialPoints");
 				  this.combatMissions=rs.getInt("combatMissions");
 				  this.missionPoints.add(0);
 				  this.missionPoints.add(rs.getInt("missionPoints1"));

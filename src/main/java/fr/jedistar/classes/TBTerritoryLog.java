@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -57,7 +58,7 @@ public class TBTerritoryLog {
 		if( cm1str != null && cm1str.length() > 0 ) {
 			String[] tmpCM1 = cm1str.split(",");
 			for( Integer cm1 = 0; cm1 != tmpCM1.length; ++cm1 ) {
-				this.CM1.add(tmpCM1[cm1]);
+				this.CM1.add(tmpCM1[cm1].trim());
 			}
 		}
 		
@@ -65,7 +66,7 @@ public class TBTerritoryLog {
 		if( cm2str != null && cm2str.length() > 0 ) {
 			String[] tmpCM2 = cm2str.split(",");
 			for( Integer cm2 = 0; cm2 != tmpCM2.length; ++cm2 ) {
-				this.CM2.add(tmpCM2[cm2]);
+				this.CM2.add(tmpCM2[cm2].trim());
 			}
 		}
 		  
@@ -73,7 +74,7 @@ public class TBTerritoryLog {
 		if( sm1str !=  null && sm1str.length() > 0 ) {
 			String[] tmpSM1 = sm1str.split(",");
 			for( Integer sm1 = 0; sm1 != tmpSM1.length; ++sm1 ) {
-				this.SM1.add(tmpSM1[sm1]);
+				this.SM1.add(tmpSM1[sm1].trim());
 			}
 		}
 		
@@ -97,8 +98,31 @@ public class TBTerritoryLog {
 			
 	}
 	
+
+	public long getMissionTotal( List<String> mission, Territory terr, Integer limit ) {
+		long total = 0; 
+		Collections.sort(mission);
+		for( Integer i = 1; i <= limit; ++i ) {
+			Integer count = mission.lastIndexOf(String.valueOf(i)) != -1 ? mission.lastIndexOf(String.valueOf(i)) + 1 : 0;  
+			total += count * terr.missionPoints.get(i);
+		}
+		return total;
+	}
 	
-	public long getMissionTotal( List<String> mission, Territory terr ) {
+
+	public long getPlatoonTotal( String platoons, Territory terr ) {		
+		long total = 0;
+		char[] splitPlatoons = platoons.toUpperCase().toCharArray();
+		for( Integer i = 1; i != splitPlatoons.length; ++i ) {
+			if( splitPlatoons[i] == 'Y' ) {
+				total += terr.platoonPoints.get(i);
+			}
+		}		
+		return total;
+	}
+
+	
+	public long getMissionTotal2( List<String> mission, Territory terr ) {
 		
 		long total = 0;
 		for( Integer i = 1; i <= mission.size(); i+=2 ) {
@@ -118,26 +142,6 @@ public class TBTerritoryLog {
 	}
 	
 	
-	public long getPlatoonTotal( String platoons, Territory terr ) {
-		
-		long total = 0;
-		char[] splitPlatoons = platoons.toUpperCase().toCharArray();
-		for( Integer i = 1; i != splitPlatoons.length; ++i ) {
-			
-			try {
-				
-				if( splitPlatoons[i] == 'Y' ) {
-					total += terr.platoonPoints.get(i);
-				}
-				
-			} catch (NumberFormatException e) {
-				logger.error(e.getMessage());
-				return 0;
-			}
-			
-		}		
-		return total;
-	}
 	
 	
 	public String history(String type) {
@@ -161,11 +165,12 @@ public class TBTerritoryLog {
 		String reportStr = "";
 		long starPoints = 0;
 		Territory terr = new Territory(this.territoryID);
+		Integer limit = "a".equalsIgnoreCase(this.territoryID.substring(3, 4)) && this.phase > 2 ? 3 : 6;
 		
 		if( type.equalsIgnoreCase(REPORT_FULL) ) {
 			
 			if( this.CM1.size() > 1 ) {
-				long total = this.getMissionTotal( this.CM1, terr );
+				long total = this.getMissionTotal( this.CM1, terr, limit );
 				starPoints += total;
 
 				reportStr += "**Combat mission 1**\r\n";
@@ -173,7 +178,7 @@ public class TBTerritoryLog {
 				reportStr += "Points earned: *"+NumberFormat.getIntegerInstance().format(total)+"*\r\n";				
 			}
 			if( terr.combatMissions == 2 && this.CM2.size() > 1 ) {
-				long total = this.getMissionTotal( this.CM2, terr );
+				long total = this.getMissionTotal( this.CM2, terr, limit );
 				starPoints += total;
 
 				reportStr += "\t\r\n";
@@ -182,7 +187,7 @@ public class TBTerritoryLog {
 				reportStr += "Points earned: *"+NumberFormat.getIntegerInstance().format(total)+"*\r\n";
 			}
 			if( terr.specialMission != null && this.SM1.size() > 1 ) {
-				long total = this.getMissionTotal( this.SM1, terr );
+				long total = this.getMissionTotal( this.SM1, terr, limit );
 				starPoints += total;
 
 				reportStr += "\t\r\n";
@@ -255,7 +260,7 @@ public class TBTerritoryLog {
 					return reportStr; 
 				}
 
-				long total = this.getMissionTotal( CM, terr );
+				long total = this.getMissionTotal( CM, terr, limit );
 
 				reportStr += "```\r\n";
 				reportStr += "Combat mission "+m+"\r\n";
@@ -285,7 +290,7 @@ public class TBTerritoryLog {
 				return reportStr;
 			}
 
-			long total = this.getMissionTotal( this.SM1, terr );
+			long total = this.getMissionTotal( this.SM1, terr, limit );
 
 			reportStr += "```\r\n";
 			reportStr += "Special mission\r\n";
@@ -468,7 +473,7 @@ public class TBTerritoryLog {
 				  if( cm1str != null && cm1str.length() > 0 ) {
 					  String[] tmpCM1 = cm1str.split(",");
 					  for( Integer cm1 = 0; cm1 != tmpCM1.length; ++cm1 ) {
-						  this.CM1.add(tmpCM1[cm1]);
+						  this.CM1.add(tmpCM1[cm1].trim());
 					  }
 				  }
 
@@ -476,7 +481,7 @@ public class TBTerritoryLog {
 				  if( cm2str != null && cm2str.length() > 0 ) {
 					  String[] tmpCM2 = cm2str.split(",");
 					  for( Integer cm2 = 0; cm2 != tmpCM2.length; ++cm2 ) {
-						  this.CM2.add(tmpCM2[cm2]);
+						  this.CM2.add(tmpCM2[cm2].trim());
 					  }
 				  }
 				  
@@ -484,7 +489,7 @@ public class TBTerritoryLog {
 				  if( sm1str !=  null && sm1str.length() > 0 ) {
 					  String[] tmpSM1 = sm1str.split(",");
 					  for( Integer sm1 = 0; sm1 != tmpSM1.length; ++sm1 ) {
-						  this.SM1.add(tmpSM1[sm1]);
+						  this.SM1.add(tmpSM1[sm1].trim());
 					  }
 				  }
 				  
