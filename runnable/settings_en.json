@@ -100,7 +100,7 @@
         
         "messages":{
             "approxMatches":"\r\n**Here's the characters that are close to your search :**\r\n\r\n",
-            "characterMods":"**  Set 1** : %s\r\n  **Set 2** : %s\r\n  **Set 3** : %s\r\n\r\n  **☐** : %s\r\n  **➚** : %s\r\n  **◆** : %s\r\n  **Δ** : %s\r\n  **O** : %s\r\n  **✙** : %s\r\n  ",
+            "characterMods":"**  Set 1** : %s\r\n  **Set 2** : %s\r\n  **Set 3** : %s\r\n\r\n  **â˜�** : %s\r\n  **âžš** : %s\r\n  **â—†** : %s\r\n  **Î”** : %s\r\n  **O** : %s\r\n  **âœ™** : %s\r\n  ",
             "help":"This command returns the mod setup advised for a given character.\r\n\r\n**Example**\r\n%mods anakin"
         },
         
@@ -154,7 +154,7 @@
         },
         
         "errorMessages":{
-            "forbidden":"You may not execute this command.\r\nYou must be part of the «botAdmins» Discord group to administer the bot.",
+            "forbidden":"You may not execute this command.\r\nYou must be part of the «botadmins» Discord group to administer the bot.",
             "paramsNummber":"Not enough parameters",
             "incorrectNumber":"The number you typed wasn't recognized correctly",
             "incorrectURL":"The webhook you typed wasn't recognized correctly",
@@ -211,42 +211,59 @@
         
         "commands":{
             "base":"tba",
+            "help":"help",
             "alert":"alert",
             "start":"start",
             "finish":"finish",
             "log":"log",
             "report":"report",
+            "platoons":"platoons",
             "phase":"phase",
-            "toggleON":"on",
-            "toggleOFF":"off"
+            "cm1":"cm1",
+            "cm2":"cm2",
+            "cm":"cm",
+            "sm":"sm"
         },
         
         "help":"",
         
         "messages":{
-            "confirmUpdateChannel":"Are you sure you want to update this channel ?",
-            "warnUpdateGuild":"**This Discord channel is already associated with guild number %d ** \r\n",
-            "warnUpdateTBAssistant":"**Toggling the Territory Battle Assistant will deactivate it in all your other guild channels ** \r\n",
-            "warnUpdateWebhook":"**This Discord channel already has a webhook ** \r\n",
-            "channelSetupOK":"Channel setup successful",
+            "updateLogOK":"Log updated",
             "cancelAction":"OK, canceling.",
-            "alertUpdateTerrLog":"Already exists as %s ...update to %s ?"
+            "alertUpdateTerrLog":"Already exists as %s ...update to %s ?",
+            "alertLogActivityTitle":"Log your activity by adding the following reactions to each log",
+            "alertLogActivityDescription":":one: :two: :three: :four: :five: :six:",
+            "alertPhaseFinishTitle":"Warning! Phase %d will finish in 60 minutes!",
+            "alertPhaseFinishDescription":"Last call for deployment and activity logging!",
+            "alertPlatoonLog":"```%s : Platoon log```",
+            "alertCombatMissionLog":"```%s : Combat Mission %d log```",
+            "alertSpecialMissionLog":"```%s : Special Mission log```",
+            "confirmedPlatoonLogged":"%s : Platoon %d has been logged as full (15/15)",
+            "confirmedMissionLogged":"%s : %s has logged in %s with %d",
+            "reportTitle":"Territory Battle report (%d - %d)",
+            "reportPhase":"Phase %d"
         },
         
         "errorMessages":{
+            "forbidden":"You may not execute this command.\r\nYou must be part of the «botadmins» Discord group to administer the bot.",
             "noChannel":"This command must be typed from a server (not through a private message)",
             "noGuildNumber":"No guild associated to this Discord channel. Ask your bot admins to run *%setup*",
             "noTerritory":"I cannot find a territory with that ID or that name",
             "noTerritoryInPhase":"You can only log against the current phase",
+            "noMission":"This territory does not have the requested mission",
             "badPhase":"Phase lookup must include a number between 1 and 6",
-            "badMission":"This mission type or number wasn't recognized. Try CM1 for Combat mission 1 or SM1 for Special mission 1",
+            "badMission":"This mission type or number wasn't recognized. Try CM1 for Combat mission 1 or SM1 for Special mission 1",            
+            "noLog":"There are no logs found for this request",
             "commandError":"This command is not recognized",
             "paramsNumber":"Parameters missing",
             "incorrectNumber":"We did not recognized a number",
             "dbUpdateError":"Database update error ",
             "dbNoCurrentTB":"**This command must be run during a Territory battle phase**\r\nThe next territory battle is scheduled to start on: %s",
             "tooMuchResults":"Too many results, try limiting your search to one ofthe following chararacters :\r\n",
-            "sqlError":"An error occurred while accessing the database"
+            "sqlError":"An error occurred while accessing the database",
+            "alreadyLogged":"%s : Platoon %d has already been logged",
+            "alreadyLoggedDetails":"%s : [%s] You've already been logged for this mission",
+            "incorrectMissionTiers":"%s : [%s] these missions only have %d tiers"                
         }
     },
 
@@ -255,7 +272,7 @@
         "command":"help",
 
         "messages":{
-            "introMessage":"Detailed help can be found here : <https://jedistar.jimdo.com/jedistar-bot/>\r\nHere is a little overview of what i can do for you :",
+            "introMessage":"Detailed help can be found here :Â <https://jedistar.jimdo.com/jedistar-bot/>\r\nHere is a little overview of what i can do for you :",
             "smallModsMessage":"- %help mods : to know more about mods command",
             "smallRaidMessage":"- %help raid : to know more about raid command",
             "smallEquilibrageMessage":"",
@@ -287,25 +304,25 @@
             "adjust":"ajuster"
         },
         
-        "help":"Cette commande vous permet de connaître votre équilibrage sur un raid.\r\n\r\n**Exemple d'appel**\r\n%equilibrage rancor\r\n**Commandes pour les officiers :**\r\n%equilibrage maj\r\n%equilibrage lancer rancor @podium1 @podium2 @podium3 @exclus1 @exclus2\r\n%equilibrage ajouter @user\r\n%equilibrage supprimer @user\r\n%equlibrage supprimer XXXX\r\n%equilibrage terminer tank\r\n%equilibrage lancer tank podium-auto @exclusDuTop10\r\n%equilibrage lancer tank @podium1 @podium2 @podium3 @exclusDuTop10\r\n%equilibrage ajuster @user tank podium +1\r\n%equilibrage ajuster @user tank 2 -1",
+        "help":"Cette commande vous permet de connaÃ®tre votre Ã©quilibrage sur un raid.\r\n\r\n**Exemple d'appel**\r\n%equilibrage rancor\r\n**Commandes pour les officiers :**\r\n%equilibrage maj\r\n%equilibrage lancer rancor @podium1 @podium2 @podium3 @exclus1 @exclus2\r\n%equilibrage ajouter @user\r\n%equilibrage supprimer @user\r\n%equlibrage supprimer XXXX\r\n%equilibrage terminer tank\r\n%equilibrage lancer tank podium-auto @exclusDuTop10\r\n%equilibrage lancer tank @podium1 @podium2 @podium3 @exclusDuTop10\r\n%equilibrage ajuster @user tank podium +1\r\n%equilibrage ajuster @user tank 2 -1",
         
         "messages":{
-            "embedTitle":"Équilibrage de %s",
+            "embedTitle":"Ã‰quilibrage de %s",
             "embedLine":"**Tranche %s** : %d\r\n",
             "currentRaidsTitle":"Objectif pour les raids en cours :\r\n",
-            "currentRaidRange":"**%S **: Tranche %s %s dégâts\r\n",
+            "currentRaidRange":"**%S **: Tranche %s %s dÃ©gÃ¢ts\r\n",
             "currentRaidPodium":"**%S **: Podium\r\n",
             "podiumText":"**+--- Podium ---+**\r\n",
             "podiumEnd":"**+--------------+**\r\n\r\n",
-            "confirmDelete":"Êtes-vous sûr de vouloir supprimer l'utilisateur %s ?\r\n:warning: Cette action est irréversible %"
+            "confirmDelete":"ÃŠtes-vous sÃ»r de vouloir supprimer l'utilisateur %s ?\r\n:warning: Cette action est irrÃ©versible %"
         },
         
         "errorMessages":{
-            "forbidden":"Vous n'avez pas le droit d'exécuter cette commande",
-            "writeJson":"Erreur lors de l'écriture du fichier JSON",
+            "forbidden":"Vous n'avez pas le droit d'exÃ©cuter cette commande",
+            "writeJson":"Erreur lors de l'Ã©criture du fichier JSON",
             "archiveJson":"Erreur lors de l'archivage du fichier JSON",
             "readJson":"Erreur lors de la lecture du fichier JSON",
-            "numberProblem":"Un nombre entré n'a pas été reconnu"
+            "numberProblem":"Un nombre entrÃ© n'a pas Ã©tÃ© reconnu"
         }
     }
 }

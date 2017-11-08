@@ -65,14 +65,8 @@ public class TerritoryBattleAssistant implements Runnable {
 
 			this.eventLog.loadLastEventLog();
 			this.eventLog.calculateToday(this.eventTimeZone);
-			logger.info("Found phase: "+this.eventLog.phase);
-
+			logger.info("Calculated phase: "+this.eventLog.phase);
 	
-			//this.sendAlerts(2);
-			//this.eventLog.date.add(Calendar.SECOND, 5);
-			//reset.scheduleAtFixedRate(new doTriggers(), this.eventLog.date.getTime(), 1000*60*60*24);
-
-			
 			//Ensure the timer start date has the time set to 15:00 UTC:+0:00
 			Calendar timerInitDateTime = this.eventLog.date;
 			timerInitDateTime.setTimeZone(this.eventTimeZone);
@@ -81,9 +75,13 @@ public class TerritoryBattleAssistant implements Runnable {
 			timerInitDateTime.set(Calendar.SECOND, 0);
 
 			reset.scheduleAtFixedRate(new resetPhase(), timerInitDateTime.getTime(), 1000*60*60*24);
-			logger.info( "Next timer: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( timerInitDateTime.getTime() ) );
-				
-			logger.info( this.threadName+" started and scheduled successfully");
+			logger.info( "Next start alert: "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( timerInitDateTime.getTime() ) );
+			
+			timerInitDateTime.add(Calendar.DAY_OF_YEAR, 1);
+			timerInitDateTime.set(Calendar.HOUR_OF_DAY, 16);
+			reset.scheduleAtFixedRate(new alertEnding(), timerInitDateTime.getTime(), 1000*60*60*24);
+			logger.info( "Next end alert:   "+( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( timerInitDateTime.getTime() ) );
+						
 	        Thread.sleep(500);
 	    } catch(InterruptedException e) {
 	    	logger.warn("Thread " +  this.threadName + " interrupted.");
@@ -115,14 +113,15 @@ public class TerritoryBattleAssistant implements Runnable {
             		eventLog.phase = 0;
             		
             		//Schedule the next one
-            		eventLog.saveNewLog();
-            		
+            		eventLog.saveNewLog();            		
             		eventLog.phase = offset*-1;
             		
             		logger.debug( "Territory battle cooling down "+eventLog.phase+" days");
             	}
             	
             	if( eventLog.phase > 0 ) {
+            		
+            		//TB PHASE HAS STARTED, SEND START TRIGGERS
             		logger.debug( "Phase "+eventLog.phase+" started");
             		eventLog.date.add(Calendar.DATE, 1);            		
             		sendTriggers( eventLog.phase );
@@ -136,15 +135,16 @@ public class TerritoryBattleAssistant implements Runnable {
 		}
 	}
 
-	private class doTriggers extends TimerTask {
+	
+	private class alertEnding extends TimerTask {
 		@Override
 		public void run() {
 
-			sendTriggers( eventLog.phase );
+			sendEndingAlert( eventLog.phase );
 		}
 	}
 	
-	
+
 	public boolean sendTriggers( Integer phase ) {
 		List<Channel> activeChannels = getWebhooks();
 		EmbedBuilder embed = new EmbedBuilder();
@@ -159,11 +159,10 @@ public class TerritoryBattleAssistant implements Runnable {
 		embeds.put(embed.toJSONObject());
 
 		
-		String msg = "%tba alert platoons "+this.eventLog.phase;
+		String msg = "%tba alert start";
 		alert.put("username", "Territory Battle Assistant");
 		alert.put("content", msg);
 		alert.put("embeds", embeds );
-
 
 		for( Integer i = 0; i != activeChannels.size(); ++i ) {
 			try { 
@@ -177,6 +176,28 @@ public class TerritoryBattleAssistant implements Runnable {
 		
 		return true;
 	}
+	
+	public boolean sendEndingAlert( Integer phase ) {
+		List<Channel> activeChannels = getWebhooks();
+		JSONObject alert = new JSONObject();
+
+		String msg = "%tba alert finish";
+		alert.put("username", "Territory Battle Assistant");
+		alert.put("content", msg);
+
+		for( Integer i = 0; i != activeChannels.size(); ++i ) {
+			try { 
+				sendPOST( activeChannels.get(i).webhook, alert );
+				Thread.sleep(500);
+			} catch(InterruptedException | IOException e) {
+				logger.error("channel send: "+e.getMessage());
+			}
+
+		}
+		
+		return true;
+	}
+	
 	
 	private static void sendPOST( String postUrl, JSONObject jsonToPost ) throws IOException {
 		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
