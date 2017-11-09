@@ -41,6 +41,7 @@ public class SetUpCommand implements JediStarBotCommand {
 	private final String COMMAND_GUILD_NUMBER;
 	private final String COMMAND_TBASSISTANT;
 	private final String COMMAND_WEBHOOK;
+	private final String COMMAND_ALERT_ROLE;
 	private final String COMMAND_BOOLEAN_TRUE;
 	private final String COMMAND_BOOLEAN_FALSE;
 	
@@ -50,6 +51,7 @@ public class SetUpCommand implements JediStarBotCommand {
 	private final String WARN_UPDATE_GUILD;
 	private final String WARN_UPDATE_TBASSISTANT;
 	private final String WARN_UPDATE_WEBHOOK;
+	private final String WARN_UPDATE_ALERT_ROLE;
 	private final String SETUP_CHANNEL_OK;	
 	private final String CANCEL_MESSAGE;
 	
@@ -78,6 +80,7 @@ public class SetUpCommand implements JediStarBotCommand {
 	private static final String JSON_SETUP_COMMANDS_GUILD_NUMBER = "guildNumber";
 	private static final String JSON_SETUP_COMMANDS_TBASSISTANT = "tbAssistant";
 	private static final String JSON_SETUP_COMMANDS_WEBHOOK = "webhook";
+	private static final String JSON_SETUP_COMMANDS_ALERT_ROLE = "alertRole";
 	private static final String JSON_SETUP_COMMANDS_BOOLEAN_TRUE = "toggleON";
 	private static final String JSON_SETUP_COMMANDS_BOOLEAN_FALSE = "toggleOFF";
 	
@@ -87,6 +90,7 @@ public class SetUpCommand implements JediStarBotCommand {
 	private static final String JSON_SETUP_MESSAGES_WARN_UPDATE_GUILD = "warnUpdateGuild";
 	private static final String JSON_SETUP_MESSAGES_WARN_UPDATE_WEBHOOK = "warnUpdateWebhook";
 	private static final String JSON_SETUP_MESSAGES_WARN_UPDATE_TBASSISTANT = "warnUpdateTBAssistant";
+	private static final String JSON_SETUP_MESSAGES_WARN_UPDATE_ALERT_ROLE = "warnUpdateAlertRole";
 	private static final String JSON_SETUP_MESSAGES_CHANNEL_SETUP_OK = "channelSetupOK";
 	private static final String JSON_SETUP_MESSAGES_CANCEL = "cancelAction";
 	
@@ -118,12 +122,14 @@ public class SetUpCommand implements JediStarBotCommand {
 		COMMAND_GUILD_NUMBER = commands.getString(JSON_SETUP_COMMANDS_GUILD_NUMBER);
 		COMMAND_TBASSISTANT = commands.getString(JSON_SETUP_COMMANDS_TBASSISTANT);
 		COMMAND_WEBHOOK = commands.getString(JSON_SETUP_COMMANDS_WEBHOOK);
+		COMMAND_ALERT_ROLE = commands.getString(JSON_SETUP_COMMANDS_ALERT_ROLE);
 		COMMAND_BOOLEAN_TRUE = commands.getString(JSON_SETUP_COMMANDS_BOOLEAN_TRUE);
 		COMMAND_BOOLEAN_FALSE = commands.getString(JSON_SETUP_COMMANDS_BOOLEAN_FALSE);
 		
 		COMMANDS.add( COMMAND_GUILD_NUMBER.toLowerCase() );
 		COMMANDS.add( COMMAND_TBASSISTANT.toLowerCase() );
 		COMMANDS.add( COMMAND_WEBHOOK.toLowerCase() );
+		COMMANDS.add( COMMAND_ALERT_ROLE.toLowerCase() );
 		COMMANDS.add( HELP.toLowerCase() );
 		
 		JSONObject messages = setupParams.getJSONObject(JSON_SETUP_MESSAGES);
@@ -131,6 +137,7 @@ public class SetUpCommand implements JediStarBotCommand {
 		WARN_UPDATE_GUILD = messages.getString(JSON_SETUP_MESSAGES_WARN_UPDATE_GUILD);
 		WARN_UPDATE_TBASSISTANT = messages.getString(JSON_SETUP_MESSAGES_WARN_UPDATE_TBASSISTANT);
 		WARN_UPDATE_WEBHOOK = messages.getString(JSON_SETUP_MESSAGES_WARN_UPDATE_WEBHOOK);
+		WARN_UPDATE_ALERT_ROLE = messages.getString(JSON_SETUP_MESSAGES_WARN_UPDATE_ALERT_ROLE);
 		SETUP_CHANNEL_OK = messages.getString(JSON_SETUP_MESSAGES_CHANNEL_SETUP_OK);
 		CANCEL_MESSAGE = messages.getString(JSON_SETUP_MESSAGES_CANCEL);
 		
@@ -189,7 +196,7 @@ public class SetUpCommand implements JediStarBotCommand {
 				return new CommandAnswer(error(NO_COMMAND_FOUND),null);	
 			}
 			
-			if( cmdParam.equalsIgnoreCase(COMMAND_GUILD_NUMBER) ) {
+			if( COMMAND_GUILD_NUMBER.equalsIgnoreCase(cmdParam) ) {
 				
 				try {
 					Integer guildID = Integer.parseInt(cmdVal);
@@ -209,7 +216,7 @@ public class SetUpCommand implements JediStarBotCommand {
 				}
 			}
 			
-			if( cmdParam.equalsIgnoreCase(COMMAND_TBASSISTANT) ) {
+			if( COMMAND_TBASSISTANT.equalsIgnoreCase(cmdParam) ) {
 				
 				if( !cmdVal.equalsIgnoreCase(COMMAND_BOOLEAN_TRUE) && !cmdVal.equalsIgnoreCase(COMMAND_BOOLEAN_FALSE) ) {
 					return new CommandAnswer(String.format(BOOLEAN_PROBLEM, COMMAND_BOOLEAN_TRUE, COMMAND_BOOLEAN_FALSE), null);
@@ -228,7 +235,7 @@ public class SetUpCommand implements JediStarBotCommand {
 				
 			}
 	
-			if( cmdParam.equalsIgnoreCase(COMMAND_WEBHOOK) ) {
+			if( COMMAND_WEBHOOK.equalsIgnoreCase(cmdParam) ) {
 		
 				String newWH = cmdVal.equalsIgnoreCase("null") ? null : cmdVal;
 				if( channel.webhook != newWH ) {
@@ -237,6 +244,19 @@ public class SetUpCommand implements JediStarBotCommand {
 					UPDATE_FLAG = channel.webhook != null ? true : UPDATE_FLAG;
 
 					channel.webhook = newWH;
+
+				}
+			}
+			
+			if( COMMAND_ALERT_ROLE.equalsIgnoreCase(cmdParam) ) {
+				
+				String newRole = cmdVal.equalsIgnoreCase("null") || cmdVal.length() == 0 ? null : cmdVal;
+				if( channel.alertRole != newRole ) {
+					
+					MESSAGE_FLAG += channel.alertRole != null ? String.format(WARN_UPDATE_ALERT_ROLE) : "";
+					UPDATE_FLAG = channel.alertRole != null ? true : UPDATE_FLAG;
+
+					channel.alertRole = newRole;
 
 				}
 			}

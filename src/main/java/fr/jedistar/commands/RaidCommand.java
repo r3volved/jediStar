@@ -15,13 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.entities.Channel;
+//import de.btobastian.javacord.entities.Channel;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Message;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.Main;
 import fr.jedistar.StaticVars;
 import fr.jedistar.formats.CommandAnswer;
+import fr.jedistar.classes.Channel;
 
 public class RaidCommand implements JediStarBotCommand {
 	
@@ -160,8 +161,14 @@ public class RaidCommand implements JediStarBotCommand {
 			aliasesMap.put(raidName, aliasesForThisRaid);
 		}
 	}
-
 	
+	@Override
+	public String getCommand() {
+		return COMMAND;
+	}
+
+
+	@Override
 	public CommandAnswer answer(DiscordAPI api, List<String> params,Message messageRecu,boolean isAdmin) {
 
 		if(params.size() == 0) {
@@ -446,8 +453,4 @@ public class RaidCommand implements JediStarBotCommand {
 		return new CommandAnswer(message, null);
 	}
 
-	@Override
-	public String getCommand() {
-		return COMMAND;
-	}
 }

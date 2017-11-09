@@ -21,6 +21,43 @@
     "baseMessage":"%s,\r%s",
     "errorMessage":"Thanks for using my services. Unfortunately I can't answer for the following reason :\r\n",
 
+    "setUpCommandParameters":{
+        
+        "commands":{
+            "base":"setup",
+            "guildNumber":"guildNumber",
+            "tbAssistant":"tbAssistant",
+            "webhook":"webhook",
+            "alertRole":"alertRole",
+            "toggleON":"on",
+            "toggleOFF":"off"
+        },
+        
+        "help":"This command allows you to setup the bot.\r\nBase command :\r\n> %setup\r\n\r\nPossible commands:\r\n> guildNumber <XXX>\r\n> tbAssistant <on|off>\r\n> webhook <channelWebhookURL>\r\n\r\nYou can find your guild number on swgoh.gg in the address of your guild page",
+        
+        "messages":{
+            "confirmUpdateChannel":"Are you sure you want to update this channel ?",
+            "warnUpdateGuild":"**This Discord channel is already associated with guild number %d** \r\n",
+            "warnUpdateTBAssistant":"**Toggling the Territory Battle Assistant will deactivate it in all your other guild channels** \r\n",
+            "warnUpdateWebhook":"**This Discord channel already has a webhook** \r\n",
+            "warnUpdateAlertRole":"**This Discord channel already has an alert role** \r\n",
+            "channelSetupOK":"Channel setup successful",
+            "cancelAction":"OK, canceling."
+        },
+        
+        "errorMessages":{
+            "forbidden":"You may not execute this command.\r\nYou must be part of the «botadmins» Discord group to administer the bot.",
+            "paramsNummber":"Not enough parameters",
+            "incorrectNumber":"The number you typed wasn't recognized correctly",
+            "incorrectURL":"The webhook you typed wasn't recognized correctly",
+            "incorrectBoolean":"Territory Battle Assistant can be toggled with **%s** and **%s**",
+            "noChannel":"This command must be called from a Discord server (no PM)",
+            "noGuild":"There is no guild registered with this channel",
+            "noWebhook":"Territory Battle Assistant requires a webhook",
+            "sqlError":"An error occurred while accessing the database",
+            "noCommandFound":"Unrecognized command"
+        }
+    },
     "raidCommandParameters":{
     
         "command":"raid",
@@ -131,41 +168,7 @@
         }
     },
     
-    "setUpCommandParameters":{
-        
-        "commands":{
-            "base":"setup",
-            "guildNumber":"guildNumber",
-            "tbAssistant":"tbAssistant",
-            "webhook":"webhook",
-            "toggleON":"on",
-            "toggleOFF":"off"
-        },
-        
-        "help":"This command allows you to setup the bot.\r\nBase command :\r\n> %setup\r\n\r\nPossible commands:\r\n> guildNumber <XXX>\r\n> tbAssistant <on|off>\r\n> webhook <channelWebhookURL>\r\n\r\nYou can find your guild number on swgoh.gg in the address of your guild page",
-        
-        "messages":{
-            "confirmUpdateChannel":"Are you sure you want to update this channel ?",
-            "warnUpdateGuild":"**This Discord channel is already associated with guild number %d ** \r\n",
-            "warnUpdateTBAssistant":"**Toggling the Territory Battle Assistant will deactivate it in all your other guild channels ** \r\n",
-            "warnUpdateWebhook":"**This Discord channel already has a webhook ** \r\n",
-            "channelSetupOK":"Channel setup successful",
-            "cancelAction":"OK, canceling."
-        },
-        
-        "errorMessages":{
-            "forbidden":"You may not execute this command.\r\nYou must be part of the «botadmins» Discord group to administer the bot.",
-            "paramsNummber":"Not enough parameters",
-            "incorrectNumber":"The number you typed wasn't recognized correctly",
-            "incorrectURL":"The webhook you typed wasn't recognized correctly",
-            "incorrectBoolean":"Territory Battle Assistant can be toggled with **%s** and **%s**",
-            "noChannel":"This command must be called from a Discord server (no PM)",
-            "noGuild":"There is no guild registered with this channel",
-            "noWebhook":"Territory Battle Assistant requires a webhook",
-            "sqlError":"An error occurred while accessing the database",
-            "noCommandFound":"Unrecognized command"
-        }
-    },
+
     
     "territoryBattlesCommandParams":{
         

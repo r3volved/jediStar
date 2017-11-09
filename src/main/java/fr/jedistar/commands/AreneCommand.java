@@ -16,6 +16,7 @@ import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
+import fr.jedistar.classes.Channel;
 import fr.jedistar.formats.CommandAnswer;
 
 public class AreneCommand implements JediStarBotCommand {
@@ -92,7 +93,14 @@ public class AreneCommand implements JediStarBotCommand {
 		ERROR_MESSAGE_INCORRECT_NUMBER = errorMessages.getString(JSON_ERROR_MESSAGE_INCORRECT_NUMBER);
 
 	}
+	
 
+	@Override
+	public String getCommand() {
+		return COMMAND;
+	}
+
+	@Override
 	public CommandAnswer answer(DiscordAPI api, List<String> params, Message messageRecu, boolean isAdmin) {
 		
 		isApproximation = false;
@@ -174,9 +182,5 @@ public class AreneCommand implements JediStarBotCommand {
 		return new CommandAnswer(message, null);
 	}
 
-	@Override
-	public String getCommand() {
-		return COMMAND;
-	}
 
 }

@@ -114,7 +114,9 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 	
 		String messageAsString = receivedMessage.getContent();
 
-//		logger.info( "Author: "+receivedMessage.getAuthor().getName() );
+		//logger.info( "Author: "+receivedMessage.getAuthor().getName() );
+		//logger.info( "Is me?: "+receivedMessage.getAuthor().isYourself() );
+		
 		if( receivedMessage.getAuthor().isYourself() ) { return; }
 		
 		//Si le message est vide ou ne commence pas par % : Ne rien faire.

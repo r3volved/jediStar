@@ -254,15 +254,15 @@ public class TBAssistantCommand implements JediStarBotCommand {
 	public String getCommand() {
 		return COMMAND;
 	}
-
-
+	
+	
 	@Override
 	public CommandAnswer answer(DiscordAPI api, List<String> params, Message receivedMessage, boolean isAdmin) {
 
 		//Kick out if not enough params
-		//if(params.size() == 0) {
-		//	return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
-		//}
+		if(params.size() == 0) {
+			return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
+		}
 
 		//Kick out if DM
 		if(receivedMessage.getChannelReceiver() == null) {
@@ -297,7 +297,14 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					/** Handle: %tba alert start */
 					
 					embed.setTitle(String.format(ALERT_PHASE_START_TITLE, thisEvent.phase));
-					embed.setDescription(String.format(ALERT_PHASE_START_DESCRIPTION, thisEvent.phase));					
+										
+					String alertDescription = String.format(ALERT_PHASE_START_DESCRIPTION, thisEvent.phase);
+					if( channel.alertRole != null ) {
+						//Add a role-mention if alertRole exists for this channel
+						alertDescription = "<@&"+channel.alertRole+">\r\n\r\n"+alertDescription;
+					}
+					
+					embed.setDescription(alertDescription);					
 					embed.setColor(eColor);
 
 					//Print title
@@ -356,7 +363,14 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					/** Handle: %tba alert finish */
 					
 					embed.setTitle(String.format(ALERT_PHASE_END_TITLE,thisEvent.phase));
-					embed.setDescription(ALERT_PHASE_END_DESCRIPTION);
+					
+					String alertDescription = String.format(ALERT_PHASE_END_DESCRIPTION, thisEvent.phase);
+					if( channel.alertRole != null ) {
+						//Add a role-mention if alertRole exists for this channel
+						alertDescription = "<@&"+channel.alertRole+"> - "+alertDescription;
+					}
+					
+					embed.setDescription(alertDescription);		
 					eColor = Color.RED;
 					embed.setColor(eColor);
 					
@@ -768,10 +782,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					return new CommandAnswer(ERROR_INCORRECT_NUMBER,null);
 					
 				}
-				
-				/** Handle: %tb log <terrID> <deploy> ... */				
-				
-				// TO DO...
+
 				
 				/** Handle: %tb log <terrID> <mission> ... */
 
@@ -894,6 +905,143 @@ public class TBAssistantCommand implements JediStarBotCommand {
 		}
 		
 		return new CommandAnswer( ERROR_COMMAND, null );
+	}
+	
+	
+	public void alert(DiscordAPI api, List<String> params, Channel channel, boolean isAdmin) {
+		
+		//Kick out if not enough params
+		if(params.size() == 0) {
+			api.getChannelById(channel.channelID).sendMessage(ERROR_MESSAGE_PARAMS_NUMBER);
+			//return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
+			return;
+		}
+		
+		//Kick out if no channel
+		if(channel.channelID == null || channel.channelID.length() == 0) {
+			api.getChannelById(channel.channelID).sendMessage(ERROR_MESSAGE_NO_CHANNEL);
+			return;
+			//return new CommandAnswer(ERROR_MESSAGE_NO_CHANNEL, null);
+		}
+		
+		TBEventLog thisEvent = new TBEventLog();
+		thisEvent.loadLastEventLog();
+		thisEvent.calculateToday(TimeZone.getDefault());
+		
+		if( thisEvent.phase < 1 || thisEvent.phase > 6 ) {
+			api.getChannelById(channel.channelID).sendMessage(String.format(ERROR_NO_CURRENT_TB,( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( thisEvent.date.getTime() )));
+			return;
+			//return new CommandAnswer(String.format(ERROR_NO_CURRENT_TB,( new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss z" ) ).format( thisEvent.date.getTime() )),null);
+		}
+		
+		List<Territory> territories = getAllTerritoryMatches(thisEvent.phase);
+		
+		
+		if( COMMAND_ALERT.equalsIgnoreCase(params.get(0)) ) {
+		
+			EmbedBuilder embed = new EmbedBuilder();
+			Color eColor = Color.RED;
+			
+			if( params.size() > 1 ) {
+				
+				if( COMMAND_START.equalsIgnoreCase(params.get(1)) ) {
+					
+					/** Handle: %tba alert start */
+					
+					embed.setTitle(String.format(ALERT_PHASE_START_TITLE, thisEvent.phase));
+					embed.setDescription(String.format(ALERT_PHASE_START_DESCRIPTION, thisEvent.phase));					
+					embed.setColor(eColor);
+
+					//Print title
+					try {
+						api.getChannelById(channel.channelID).sendMessage("-",embed);
+						Thread.sleep(1000);
+					} catch (InterruptedException | NullPointerException e) {
+						logger.error(e.getMessage());
+						e.printStackTrace();
+					}
+
+					
+					//ADD TERRITORY BATTLE ALERTS
+					for( Integer t = 0; t < territories.size(); t++ ) {
+
+						//SET COLORED TITLE - CYAN for Airspace, WHITE for ground regular, ORANGE for special mission
+						embed.setTitle(territories.get(t).territoryID+" - "+territories.get(t).territoryName);
+						embed.setDescription(String.format(ALERT_TERRITORY_START_DESCRIPTION, territories.get(t).territoryID));
+						eColor = territories.get(t).specialMission != null ? Color.ORANGE : Color.WHITE;
+						eColor = territories.get(t).combatType == 2 ? Color.CYAN : eColor;
+						embed.setColor(eColor);
+						
+						//Print title
+						api.getChannelById(channel.channelID).sendMessage(null,embed);
+						
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
+						//ALERT THE PLATOON LOGS
+						alertPlatoons( api, null, territories.get(t), thisEvent, channel );
+						//ALERT THE MISSION LOGS
+						alertMissions( api, null, territories.get(t), thisEvent, channel );				
+
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
+					}
+					
+					//ALERT THE HOW-TO
+					embed.setTitle(ALERT_LOG_ACTIVITY_TITLE);
+					embed.setDescription(ALERT_LOG_ACTIVITY_DESCRIPTION);
+					eColor = Color.RED;
+					embed.setColor(eColor);
+
+					api.getChannelById(channel.channelID).sendMessage(null,embed);
+					return;
+
+					//return new CommandAnswer(null,embed);
+					
+				}
+				
+				if( COMMAND_FINISH.equalsIgnoreCase(params.get(1)) ) {
+										
+					/** Handle: %tba alert finish */
+					
+					embed.setTitle(String.format(ALERT_PHASE_END_TITLE,thisEvent.phase));
+					embed.setDescription(ALERT_PHASE_END_DESCRIPTION);
+					eColor = Color.RED;
+					embed.setColor(eColor);
+					
+					api.getChannelById(channel.channelID).sendMessage(null,embed);
+					return;
+					
+					//return new CommandAnswer(null,embed);
+					
+				}
+				
+			}	
+			
+			/** Handle: %tba alert */
+			
+			embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
+			embed.setTitle(String.format(MESSAGE_REPORT_PHASE,thisEvent.name, thisEvent.phase));
+			eColor = Color.RED;
+			embed.setColor(eColor);
+			
+			api.getChannelById(channel.channelID).sendMessage(null,embed);
+			return;
+			//return new CommandAnswer(null,embed);
+			
+		}
+	
+		api.getChannelById(channel.channelID).sendMessage(ERROR_MESSAGE_PARAMS_NUMBER);
+		return;
+		//return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
+
 	}
 	
 
@@ -1101,8 +1249,10 @@ public class TBAssistantCommand implements JediStarBotCommand {
 
 		try {
 			Message sentMessage = null;
-			sentMessage = future.get(1, TimeUnit.MINUTES);					
-			JediStarBotMultiReactionAddListener.addPendingMultiAction(new PendingMultiAction(api.getYourself(),"executeLogUpdate",this,receivedMessage,24,thisEvent.id,sentMessage.getId(),missionType));				
+			sentMessage = future.get(1, TimeUnit.MINUTES);
+			Message reactionMessage = receivedMessage != null ? receivedMessage : sentMessage; 
+			
+			JediStarBotMultiReactionAddListener.addPendingMultiAction(new PendingMultiAction(api.getYourself(),"executeLogUpdate",this,reactionMessage,24,thisEvent.id,sentMessage.getId(),missionType));				
 
 			Thread.sleep(800);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -1120,8 +1270,10 @@ public class TBAssistantCommand implements JediStarBotCommand {
 
 			try {
 				Message sentMessage = null;
-				sentMessage = future.get(1, TimeUnit.MINUTES);					
-				JediStarBotMultiReactionAddListener.addPendingMultiAction(new PendingMultiAction(api.getYourself(),"executeLogUpdate",this,receivedMessage,24,thisEvent.id,sentMessage.getId(),missionType));				
+				sentMessage = future.get(1, TimeUnit.MINUTES);		
+				Message reactionMessage = receivedMessage != null ? receivedMessage : sentMessage; 
+
+				JediStarBotMultiReactionAddListener.addPendingMultiAction(new PendingMultiAction(api.getYourself(),"executeLogUpdate",this,reactionMessage,24,thisEvent.id,sentMessage.getId(),missionType));				
 
 				Thread.sleep(800);
 			} catch (InterruptedException | ExecutionException | TimeoutException e) {

@@ -22,15 +22,15 @@ public class Channel {
 
 	final static Logger logger = LoggerFactory.getLogger(SetUpCommand.class);
 
-	private static final String INSERT_CHANNEL_REQUEST = "INSERT INTO guild VALUES (?, ?, ?, ?)";
+	private static final String SAVE_CHANNEL_REQUEST = "INSERT INTO guild (channelID, guildID, tbAssistant, webhook, alertRole) VALUES ( ?,?,?,?,? ) ON DUPLICATE KEY UPDATE guildID=?, tbAssistant=?, webhook=?, alertRole=?";
 	private static final String SELECT_CHANNEL_REQUEST = "SELECT * FROM guild WHERE channelID=?";
-	private static final String UPDATE_CHANNEL_REQUEST = "UPDATE guild SET guildID=?, tbAssistant=?, webhook=? WHERE channelID=?";
 	private static final String DEACTIVATE_TBASSISTANT_BY_GUILD_REQUEST = "UPDATE guild SET tbAssistant=0 WHERE guildID=?;";
 	
 	public String channelID;
 	public Integer guildID;
 	public boolean tbAssistant;
 	public String webhook;
+	public String alertRole;
 	public boolean saved;
 	
 	public Channel( String channelID ) {
@@ -38,14 +38,68 @@ public class Channel {
 		this.guildID = 0;
 		this.tbAssistant = false;
 		this.webhook = null;
+		this.alertRole = null;
 		
 		this.saved = this.getChannelByID( channelID );
 	}
 	
+	
 	public boolean saveChannel() {
-		return this.saved ? this.updateChannel() : this.insertChannel();
+		this.saved = this.saveNewChannel();
+		return this.saved;
 	}
+	
+	
+	private boolean saveNewChannel() {
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			conn = StaticVars.getJdbcConnection();
 
+			if( this.tbAssistant ) {
+				this.deactivateTBAForGuild();
+			}
+			
+			stmt = conn.prepareStatement(SAVE_CHANNEL_REQUEST);
+			
+			//INSERT
+			stmt.setString(1,this.channelID);
+			stmt.setInt(2,this.guildID);
+			stmt.setBoolean(3,this.tbAssistant);
+			stmt.setString(4,this.webhook);
+			stmt.setString(5,this.alertRole);
+			//UPDATE
+			stmt.setInt(6,this.guildID);
+			stmt.setBoolean(7,this.tbAssistant);
+			stmt.setString(8,this.webhook);
+			stmt.setString(9,this.alertRole);			
+			
+			logger.debug("Executing query : "+stmt.toString());
+			stmt.executeUpdate();
+			
+			return true;
+		}
+		catch(SQLException e) {
+			logger.error(e.getMessage());
+			return false;
+		}
+		finally {
+
+			try {
+				if(rs != null) { rs.close(); }
+				if(stmt != null) { stmt.close(); }
+			} catch (SQLException e) {
+				e.printStackTrace();
+				logger.error(e.getMessage());
+			}
+
+		}
+	}
+	
+	
 	private boolean deactivateTBAForGuild() {
 		
 		Connection conn = null;
@@ -80,90 +134,6 @@ public class Channel {
 		}		
 	}
 	
-	private boolean updateChannel() {
-		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		
-		try {
-			conn = StaticVars.getJdbcConnection();
-
-			if( this.tbAssistant ) {
-				this.deactivateTBAForGuild();
-			}			
-			
-			stmt = conn.prepareStatement(UPDATE_CHANNEL_REQUEST);
-			
-			//UPDATE
-			stmt.setInt(1,this.guildID);
-			stmt.setBoolean(2,this.tbAssistant);
-			stmt.setString(3,webhook);
-			stmt.setString(4,this.channelID);
-			
-			logger.debug("Executing query : "+stmt.toString());
-			stmt.executeUpdate();
-			
-			return true;
-		}
-		catch(SQLException e) {
-			logger.error(e.getMessage());
-			return false;
-		}
-		finally {
-
-			try {
-				if(rs != null) { rs.close(); }
-				if(stmt != null) { stmt.close(); }
-			} catch (SQLException e) {
-				e.printStackTrace();
-				logger.error(e.getMessage());
-			}
-
-		}
-		
-	}
-	
-	
-	private boolean insertChannel() {
-		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		
-		try {
-			conn = StaticVars.getJdbcConnection();
-
-			stmt = conn.prepareStatement(INSERT_CHANNEL_REQUEST);
-			
-			//INSERT
-			stmt.setString(1,this.channelID);
-			stmt.setInt(2,this.guildID);
-			stmt.setBoolean(3,this.tbAssistant);
-			stmt.setString(4,webhook);
-			
-			logger.debug("Executing query : "+stmt.toString());
-			stmt.executeUpdate();
-			
-			return true;
-		}
-		catch(SQLException e) {
-			logger.error(e.getMessage());
-			return false;
-		}
-		finally {
-
-			try {
-				if(rs != null) { rs.close(); }
-				if(stmt != null) { stmt.close(); }
-			} catch (SQLException e) {
-				e.printStackTrace();
-				logger.error(e.getMessage());
-			}
-
-		}
-		
-	}
 	
 	public boolean getChannelByID( String channelID ) {
 		
@@ -186,6 +156,7 @@ public class Channel {
 				this.guildID = rs.getInt("guildID");
 				this.tbAssistant = rs.getBoolean("tbAssistant");
 				this.webhook = rs.getString("webhook");
+				this.alertRole = rs.getString("alertRole");
 				return true;
 			}
 			else {

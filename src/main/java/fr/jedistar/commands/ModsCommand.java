@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.entities.Channel;
+//import de.btobastian.javacord.entities.Channel;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
@@ -36,6 +36,7 @@ import fr.jedistar.Main;
 import fr.jedistar.StaticVars;
 import fr.jedistar.formats.CommandAnswer;
 import fr.jedistar.utils.JaroWinklerDistance;
+import fr.jedistar.classes.Channel;
 
 
 public class ModsCommand implements JediStarBotCommand {
@@ -129,6 +130,12 @@ public class ModsCommand implements JediStarBotCommand {
 		JSON_ERROR = errorMessages.getString(JSON_MODS_ERROR_MESSAGES_JSON);
 		MESSAGE_TOO_LONG = errorMessages.getString(JSON_MODS_ERROR_MESSAGES_TOO_LONG);
 	}
+	
+	@Override
+	public String getCommand() {
+		return COMMAND;
+	}
+
 	
 	@Override
 	public CommandAnswer answer(DiscordAPI api, List<String> params,Message messageRecu,boolean isAdmin) {
@@ -383,8 +390,4 @@ public class ModsCommand implements JediStarBotCommand {
 		
 	}
 
-	@Override
-	public String getCommand() {
-		return COMMAND;
-	}
 }

@@ -4,6 +4,7 @@ import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.message.Message;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
+import fr.jedistar.classes.Channel;
 import fr.jedistar.exception.HelpParamException;
 import fr.jedistar.formats.CommandAnswer;
 import org.json.JSONObject;
@@ -92,6 +93,12 @@ public class HelpCommand implements JediStarBotCommand {
 
 
     @Override
+    public String getCommand() {
+        return COMMAND;
+    }
+	
+	
+    @Override
     public CommandAnswer answer(DiscordAPI api, List<String> params, Message messageRecu, boolean isAdmin) {
         CommandAnswer response = new CommandAnswer("", null);
         try {
@@ -144,8 +151,4 @@ public class HelpCommand implements JediStarBotCommand {
         return sb.toString();
     }
 
-    @Override
-    public String getCommand() {
-        return COMMAND;
-    }
 }
