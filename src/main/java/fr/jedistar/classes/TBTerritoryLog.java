@@ -122,22 +122,17 @@ public class TBTerritoryLog {
 	}
 
 	
-	public long getMissionTotal2( List<String> mission, Territory terr ) {
-		
-		long total = 0;
-		for( Integer i = 1; i <= mission.size(); i+=2 ) {
-			
+	public long getSpecialMissionTotal( List<String> mission, Territory terr, Integer limit ) {
+		long total = 0; 
+		for( Integer i = 1; i < mission.size(); i+=2 ) {
 			try {
-				
-				Integer val = Integer.parseInt(mission.get(i).trim());
-				total += terr.missionPoints.get(val);
-				
-			} catch (NumberFormatException e) {
+				if( Integer.parseInt(mission.get(i)) == 3 ) {
+					total += terr.specialPoints;
+				}
+			} catch( NumberFormatException e ) {
 				logger.error(e.getMessage());
-				return 0;
 			}
-			
-		}		
+		}
 		return total;
 	}
 	
@@ -187,14 +182,12 @@ public class TBTerritoryLog {
 				reportStr += "Points earned: *"+NumberFormat.getIntegerInstance().format(total)+"*\r\n";
 			}
 			if( terr.specialMission != null && this.SM1.size() > 1 ) {
-				long total = this.getMissionTotal( this.SM1, terr, limit );
-				starPoints += total;
+				long total = this.getSpecialMissionTotal( this.SM1, terr, limit );
 
 				reportStr += "\t\r\n";
 				reportStr += "**Special mission**\r\n";
 				reportStr += "Participation: *"+String.valueOf(this.SM1.size() / 2)+" member(s)*\r\n";
-				reportStr += "Points earned: *"+NumberFormat.getIntegerInstance().format(total)+"*\r\n";
-				reportStr += "Rewards: *"+terr.specialMission+"*\r\n";
+				reportStr += "Rewards earned: *"+NumberFormat.getIntegerInstance().format(total)+" "+terr.specialMission+"*\r\n";
 			}
 			
 			long ptotal = getPlatoonTotal( this.platoons, terr );
@@ -265,8 +258,8 @@ public class TBTerritoryLog {
 				reportStr += "```\r\n";
 				reportStr += "Combat mission "+m+"\r\n";
 				reportStr += "Participation: "+String.valueOf(CM.size() / 2)+" member(s)\r\n";
-				for( Integer p = 0; p != CM.size(); p+=2 ) {
-					reportStr += p == 0 ? "" : ", ";
+				for( Integer p = CM.size() / 2; p < CM.size(); ++p ) {
+					reportStr += p == CM.size() / 2 ? "" : ", ";
 					reportStr += CM.get(p).trim();
 				}
 				reportStr += "\r\n\r\n";
@@ -290,19 +283,24 @@ public class TBTerritoryLog {
 				return reportStr;
 			}
 
-			long total = this.getMissionTotal( this.SM1, terr, limit );
+			long total = this.getSpecialMissionTotal( this.SM1, terr, limit );
 
 			reportStr += "```\r\n";
 			reportStr += "Special mission\r\n";
 			reportStr += "Participation: "+String.valueOf(this.SM1.size() / 2)+" member(s)\r\n";
 			for( Integer p = 0; p != this.SM1.size(); p+=2 ) {
-				reportStr += p == 0 ? "" : ", ";
-				reportStr += this.SM1.get(p).trim();
+				try {
+					if( Integer.parseInt(this.SM1.get(p+1).trim()) == 3 ) {
+						reportStr += p == 0 ? "" : ", ";
+						reportStr += this.SM1.get(p).trim();
+					}
+				} catch (NumberFormatException e ) {
+					logger.error(e.getMessage());
+				}
 			}
 			reportStr += "\r\n\r\n";
-			reportStr += "Rewards: "+terr.specialMission+"\r\n";
 			reportStr += "-------------------------\r\n";
-			reportStr += "Estimated points: "+NumberFormat.getIntegerInstance().format(total)+"\r\n";
+			reportStr += "Estimated "+terr.specialMission+": "+NumberFormat.getIntegerInstance().format(total)+"\r\n";
 			reportStr += "```";
 				
 		}

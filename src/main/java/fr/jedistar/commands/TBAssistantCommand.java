@@ -79,6 +79,9 @@ public class TBAssistantCommand implements JediStarBotCommand {
 	private final String ALERT_UPDATE_TERRITORY_LOG;
 	private final String ALERT_LOG_ACTIVITY_TITLE;
 	private final String ALERT_LOG_ACTIVITY_DESCRIPTION;
+	private final String ALERT_PHASE_START_TITLE;
+	private final String ALERT_PHASE_START_DESCRIPTION;
+	private final String ALERT_TERRITORY_START_DESCRIPTION;
 	private final String ALERT_PHASE_END_TITLE;
 	private final String ALERT_PHASE_END_DESCRIPTION;
 	private final String MESSAGE_PLATOON_LOG;
@@ -139,6 +142,9 @@ public class TBAssistantCommand implements JediStarBotCommand {
 	private static final String JSON_TBA_MESSAGES_ALERT_UPDATE_TERRITORY_LOG = "alertUpdateTerrLog";
 	private static final String JSON_TBA_MESSAGES_ALERT_LOG_ACTIVITY_TITLE = "alertLogActivityTitle";
 	private static final String JSON_TBA_MESSAGES_ALERT_LOG_ACTIVITY_DESCRIPTION = "alertLogActivityDescription";
+	private static final String JSON_TBA_MESSAGES_ALERT_PHASE_START_TITLE = "alertPhaseStartingTitle";
+	private static final String JSON_TBA_MESSAGES_ALERT_PHASE_START_DESCRIPTION = "alertPhaseStartingDescription";
+	private static final String JSON_TBA_MESSAGES_ALERT_TERRITORY_START_DESCRIPTION = "alertTerritoryStartingDescription";
 	private static final String JSON_TBA_MESSAGES_ALERT_PHASE_END_TITLE = "alertPhaseFinishTitle";
 	private static final String JSON_TBA_MESSAGES_ALERT_PHASE_END_DESCRIPTION = "alertPhaseFinishDescription";
 	private static final String JSON_TBA_MESSAGES_PLATOON_LOG = "alertPlatoonLog";
@@ -208,6 +214,9 @@ public class TBAssistantCommand implements JediStarBotCommand {
 		ALERT_UPDATE_TERRITORY_LOG = messages.getString(JSON_TBA_MESSAGES_ALERT_UPDATE_TERRITORY_LOG);
 		ALERT_LOG_ACTIVITY_TITLE = messages.getString(JSON_TBA_MESSAGES_ALERT_LOG_ACTIVITY_TITLE);
 		ALERT_LOG_ACTIVITY_DESCRIPTION = messages.getString(JSON_TBA_MESSAGES_ALERT_LOG_ACTIVITY_DESCRIPTION);
+		ALERT_PHASE_START_TITLE = messages.getString(JSON_TBA_MESSAGES_ALERT_PHASE_START_TITLE);
+		ALERT_PHASE_START_DESCRIPTION = messages.getString(JSON_TBA_MESSAGES_ALERT_PHASE_START_DESCRIPTION);
+		ALERT_TERRITORY_START_DESCRIPTION = messages.getString(JSON_TBA_MESSAGES_ALERT_TERRITORY_START_DESCRIPTION);
 		ALERT_PHASE_END_TITLE = messages.getString(JSON_TBA_MESSAGES_ALERT_PHASE_END_TITLE);
 		ALERT_PHASE_END_DESCRIPTION = messages.getString(JSON_TBA_MESSAGES_ALERT_PHASE_END_DESCRIPTION);
 		MESSAGE_PLATOON_LOG = messages.getString(JSON_TBA_MESSAGES_PLATOON_LOG);
@@ -287,11 +296,25 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					
 					/** Handle: %tba alert start */
 					
+					embed.setTitle(String.format(ALERT_PHASE_START_TITLE, thisEvent.phase));
+					embed.setDescription(String.format(ALERT_PHASE_START_DESCRIPTION, thisEvent.phase));					
+					embed.setColor(eColor);
+
+					//Print title
+					api.getChannelById(channel.channelID).sendMessage(null,embed);
+
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					
 					//ADD TERRITORY BATTLE ALERTS
 					for( Integer t = 0; t < territories.size(); t++ ) {
 
 						//SET COLORED TITLE - CYAN for Airspace, WHITE for ground regular, ORANGE for special mission
 						embed.setTitle(territories.get(t).territoryID+" - "+territories.get(t).territoryName);
+						embed.setDescription(String.format(ALERT_TERRITORY_START_DESCRIPTION, territories.get(t).territoryID));
 						eColor = territories.get(t).specialMission != null ? Color.ORANGE : Color.WHITE;
 						eColor = territories.get(t).combatType == 2 ? Color.CYAN : eColor;
 						embed.setColor(eColor);
@@ -330,6 +353,8 @@ public class TBAssistantCommand implements JediStarBotCommand {
 				
 				if( COMMAND_FINISH.equalsIgnoreCase(params.get(1)) ) {
 										
+					/** Handle: %tba alert finish */
+					
 					embed.setTitle(String.format(ALERT_PHASE_END_TITLE,thisEvent.phase));
 					embed.setDescription(ALERT_PHASE_END_DESCRIPTION);
 					eColor = Color.RED;
@@ -341,8 +366,10 @@ public class TBAssistantCommand implements JediStarBotCommand {
 				
 			}	
 			
+			/** Handle: %tba alert */
+			
 			embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
-			embed.setTitle(String.format(MESSAGE_REPORT_PHASE,thisEvent.phase));
+			embed.setTitle(String.format(MESSAGE_REPORT_PHASE,thisEvent.name, thisEvent.phase));
 			eColor = Color.RED;
 			embed.setColor(eColor);
 			
@@ -353,23 +380,27 @@ public class TBAssistantCommand implements JediStarBotCommand {
 		/**
 		 * REPORT progress
 		 * 
-		 * %tb report phase
+		 * %tba report phase
 		 * 
 		 */
 		if(COMMAND_REPORT.equalsIgnoreCase(params.get(0))) {
 			
 			/** Handle: %tb report ... */
-			
-			
-			if( COMMAND_PHASE.equalsIgnoreCase(params.get(1)) ) {
+
+			EmbedBuilder embed = new EmbedBuilder();					
+			embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
+			embed.setTitle(String.format(MESSAGE_REPORT_PHASE,thisEvent.name, thisEvent.phase));
+			embed.setDescription("**-**");
+			embed.setColor(Color.BLUE);
+
+			if( params.size() == 1 || COMMAND_PHASE.equalsIgnoreCase(params.get(1)) ) {
 				
-				/** Handle: %tb report phase <num> */
+				/** Handle: %tba report */
+				/** Handle: %tba report phase <num> */
 					
-				Integer phase = 0;
+				Integer phase = thisEvent.phase;
 								
-				if( params.size() == 2 ) {			
-					phase = thisEvent.phase;
-				} else {
+				if( params.size() > 2 ) {
 					try {
 						phase = Integer.parseInt(params.get(2));
 					} catch( NumberFormatException e ) {
@@ -384,13 +415,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					
 				//GET PHASE # REPORT
 				List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, channel.guildID, null, phase);
-				
-				EmbedBuilder embed = new EmbedBuilder();					
-				embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
-				embed.setTitle(String.format(MESSAGE_REPORT_PHASE,phase));
-				embed.setDescription("**-**");
-				embed.setColor(Color.BLUE);
-					
+									
 				for( Integer l = 0; l != myLog.size(); ++l ) {		
 					String reportStr = myLog.get(l).report("full");
 					reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
@@ -404,8 +429,8 @@ public class TBAssistantCommand implements JediStarBotCommand {
 
 			/** 
 			 * Report current platoons
-			 * Handle: %tb report platoons
-			 *         %tb report platoons phase <num>
+			 * Handle: %tba report platoons
+			 *         %tba report platoons phase <num>
 			 */
 			
 			if( COMMAND_PLATOONS.equalsIgnoreCase(params.get(1)) ) {
@@ -416,7 +441,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					
 					if( COMMAND_PHASE.equalsIgnoreCase(params.get(2)) ) {
 				
-						/** Handle: %tb report platoons phase <num> */
+						/** Handle: %tba report platoons phase <num> */
 							
 						if( params.size() == 4 ) {
 							try {
@@ -433,7 +458,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 
 					}
 
-					/** Handle: %tb report platoons HO3A */
+					/** Handle: %tba report platoons HO3A */
 					
 					String terrName = params.get(2);
 					for( Integer i = 3; i != params.size(); ++i ) {
@@ -445,13 +470,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					if( myLog.size() == 0 ) {
 						return new CommandAnswer(ERROR_MESSAGE_NO_LOG,null);
 					}
-					
-					EmbedBuilder embed = new EmbedBuilder();					
-					embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
-					embed.setTitle(String.format(MESSAGE_REPORT_PHASE,phase));
-					embed.setDescription("**-**");
-					embed.setColor(Color.BLUE);
-						
+											
 					for( Integer l = 0; l != myLog.size(); ++l ) {		
 						String reportStr = myLog.get(l).report(COMMAND_PLATOONS);
 						reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
@@ -462,7 +481,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 				
 				}
 
-				/** Handle: %tb report platoons */
+				/** Handle: %tba report platoons */
 				
 				List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, channel.guildID, null, phase);
 				
@@ -470,12 +489,6 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					return new CommandAnswer(ERROR_MESSAGE_NO_LOG,null);
 				}
 				
-				EmbedBuilder embed = new EmbedBuilder();					
-				embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
-				embed.setTitle(String.format(MESSAGE_REPORT_PHASE,phase));
-				embed.setDescription("**-**");
-				embed.setColor(Color.BLUE);
-					
 				for( Integer l = 0; l != myLog.size(); ++l ) {		
 					String reportStr = myLog.get(l).report(COMMAND_PLATOONS);
 					reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
@@ -487,7 +500,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 			}
 
 			
-			 /** Handle: %tb report sm */
+			 /** Handle: %tba report sm */
 
 			
 			if( COMMAND_SPECIAL_MISSION.equalsIgnoreCase(params.get(1)) ) {
@@ -498,7 +511,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					
 					if( COMMAND_PHASE.equalsIgnoreCase(params.get(2)) ) {
 				
-						/** Handle: %tb report sm phase <num> */
+						/** Handle: %tba report sm phase <num> */
 							
 						if( params.size() == 4 ) {
 							try {
@@ -514,7 +527,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 						}
 					}
 
-					/** Handle: %tb report sm HO3A */
+					/** Handle: %tba report sm HO3A */
 					
 					String terrName = params.get(2);
 					for( Integer i = 3; i != params.size(); ++i ) {
@@ -527,12 +540,6 @@ public class TBAssistantCommand implements JediStarBotCommand {
 						return new CommandAnswer(ERROR_MESSAGE_NO_LOG,null);
 					}
 					
-					EmbedBuilder embed = new EmbedBuilder();					
-					embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
-					embed.setTitle(String.format(MESSAGE_REPORT_PHASE,phase));
-					embed.setDescription("**-**");
-					embed.setColor(Color.BLUE);
-						
 					for( Integer l = 0; l != myLog.size(); ++l ) {		
 						String reportStr = myLog.get(l).report(COMMAND_SPECIAL_MISSION);
 						reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
@@ -543,7 +550,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 				
 				}
 
-				/** Handle: %tb report sm */
+				/** Handle: %tba report sm */
 				
 				List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, channel.guildID, null, phase);
 				
@@ -551,23 +558,19 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					return new CommandAnswer(ERROR_MESSAGE_NO_LOG,null);
 				}
 				
-				EmbedBuilder embed = new EmbedBuilder();					
-				embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
-				embed.setTitle(String.format(MESSAGE_REPORT_PHASE,phase));
-				embed.setDescription("**-**");
-				embed.setColor(Color.BLUE);
-					
 				for( Integer l = 0; l != myLog.size(); ++l ) {		
-					String reportStr = myLog.get(l).report(COMMAND_SPECIAL_MISSION);
-					reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
-					embed.addField(myLog.get(l).territoryID, reportStr, false);
+					if( myLog.get(l).SM1.size() > 0 ) {
+						String reportStr = myLog.get(l).report(COMMAND_SPECIAL_MISSION);
+						reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
+						embed.addField(myLog.get(l).territoryID, reportStr, false);
+					}
 				}
 					
 				return new CommandAnswer(null,embed);				
 				
 			}
 			
-			 /** Handle: %tb report cm */
+			 /** Handle: %tba report cm */
 
 			
 			if( COMMAND_COMBAT_MISSION.equalsIgnoreCase(params.get(1)) ) {
@@ -578,7 +581,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					
 					if( COMMAND_PHASE.equalsIgnoreCase(params.get(2)) ) {
 				
-						/** Handle: %tb report cm phase <num> */
+						/** Handle: %tba report cm phase <num> */
 							
 						if( params.size() == 4 ) {
 							try {
@@ -595,7 +598,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 						
 					}
 
-					/** Handle: %tb report cm HO3A */
+					/** Handle: %tba report cm HO3A */
 					
 					String terrName = params.get(2);
 					for( Integer i = 3; i != params.size(); ++i ) {
@@ -608,12 +611,6 @@ public class TBAssistantCommand implements JediStarBotCommand {
 						return new CommandAnswer(ERROR_MESSAGE_NO_LOG,null);
 					}
 					
-					EmbedBuilder embed = new EmbedBuilder();					
-					embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
-					embed.setTitle(String.format(MESSAGE_REPORT_PHASE,phase));
-					embed.setDescription("**-**");
-					embed.setColor(Color.BLUE);
-						
 					for( Integer l = 0; l != myLog.size(); ++l ) {		
 						String reportStr = myLog.get(l).report(COMMAND_COMBAT_MISSION);
 						reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
@@ -624,7 +621,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 				
 				}
 
-				/** Handle: %tb report cm */
+				/** Handle: %tba report cm */
 				
 				List<TBTerritoryLog> myLog = new TBTerritoryLog().getLogs(thisEvent.id, channel.guildID, null, phase);
 				
@@ -632,12 +629,6 @@ public class TBAssistantCommand implements JediStarBotCommand {
 					return new CommandAnswer(ERROR_MESSAGE_NO_LOG,null);
 				}
 				
-				EmbedBuilder embed = new EmbedBuilder();					
-				embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
-				embed.setTitle(String.format(MESSAGE_REPORT_PHASE,phase));
-				embed.setDescription("**-**");
-				embed.setColor(Color.BLUE);
-					
 				for( Integer l = 0; l != myLog.size(); ++l ) {		
 					String reportStr = myLog.get(l).report(COMMAND_COMBAT_MISSION);
 					reportStr += l < myLog.size()-1 ? "**-**\r\n" : ""; 
@@ -652,39 +643,39 @@ public class TBAssistantCommand implements JediStarBotCommand {
 			/** Handle: %tb report HO2A
 			 *          %tb report Overlook
 			 */
-			String terrString = params.get(1);
-			for( Integer p = 2; p != params.size(); ++p ) {
-				terrString += " "+params.get(p);
-			}
 			
-			Territory territory = new Territory(terrString);
-			
-			EmbedBuilder embed = new EmbedBuilder();					
-			embed.setAuthor(String.format(MESSAGE_REPORT_TITLE,thisEvent.id,channel.guildID),"","");
-
-			TBTerritoryLog myLog = new TBTerritoryLog(thisEvent.id, channel.guildID, territory.territoryID);
-			
-			if( !terrString.equalsIgnoreCase(territory.territoryID) ) {
+			if( params.size() > 1 ) {
 				
-				//Ambiguous entry
-				if( territory.phase > thisEvent.phase ) {
-					return new CommandAnswer(ERROR_MESSAGE_NO_TERRITORY_IN_PHASE,null);
-				}
-												
-				if( !myLog.saved ) { 					
-					return new CommandAnswer(ERROR_MESSAGE_NO_LOG,null);
+				String terrString = params.get(1);
+				for( Integer p = 2; p != params.size(); ++p ) {
+					terrString += " "+params.get(p);
 				}
 				
+				Territory territory = new Territory(terrString);				
+				TBTerritoryLog myLog = new TBTerritoryLog(thisEvent.id, channel.guildID, territory.territoryID);
+				
+				if( !terrString.equalsIgnoreCase(territory.territoryID) ) {
+					
+					//Ambiguous entry
+					if( territory.phase > thisEvent.phase ) {
+						return new CommandAnswer(ERROR_MESSAGE_NO_TERRITORY_IN_PHASE,null);
+					}
+													
+					if( !myLog.saved ) { 					
+						return new CommandAnswer(ERROR_MESSAGE_NO_LOG,null);
+					}
+					
+				}
+	
+				String reportStr = myLog.report("full");
+				embed.setTitle(territory.territoryName);
+				embed.addField(myLog.territoryID, reportStr, false);
+					
+				return new CommandAnswer(null,embed);
+				
 			}
 
-			embed.setTitle(territory.territoryName);
-			embed.setDescription("**-**");
-			embed.setColor(Color.BLUE);
-			
-			String reportStr = myLog.report("full");
-			embed.addField(myLog.territoryID, reportStr, false);
-				
-			return new CommandAnswer(null,embed);
+			return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);
 			
 		}
 			

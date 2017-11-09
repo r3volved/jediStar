@@ -233,15 +233,18 @@
             "alertUpdateTerrLog":"Already exists as %s ...update to %s ?",
             "alertLogActivityTitle":"Log your activity by adding the following reactions to each log",
             "alertLogActivityDescription":":one: :two: :three: :four: :five: :six:",
+            "alertPhaseStartingTitle":"Territory Battles - Phase %d has started",
+            "alertPhaseStartingDescription":"__For more information about this phase, try__:\r\n*%%tb info phase %d*\r\n\r\n__To see progress reports during this phase, try__:\r\n*%%tba report platoons*\r\n*%%tba report cm*\r\n*%%tba report sm*",
+            "alertTerritoryStartingDescription":"__For more information about this territory, try__:\r\n*%%tb info %s*",
             "alertPhaseFinishTitle":"Warning! Phase %d will finish in 60 minutes!",
             "alertPhaseFinishDescription":"Last call for deployment and activity logging!",
-            "alertPlatoonLog":"```%s : Platoon log```",
-            "alertCombatMissionLog":"```%s : Combat Mission %d log```",
-            "alertSpecialMissionLog":"```%s : Special Mission log```",
+            "alertPlatoonLog":"```%s : Log : Platoons```",
+            "alertCombatMissionLog":"```%s : Log : Combat Mission %d```",
+            "alertSpecialMissionLog":"```%s : Log : Special Mission```",
             "confirmedPlatoonLogged":"%s : Platoon %d has been logged as full (15/15)",
             "confirmedMissionLogged":"%s : %s has logged in %s with %d",
-            "reportTitle":"Territory Battle report (%d - %d)",
-            "reportPhase":"Phase %d"
+            "reportTitle":"Territory Battle report (%d.%d)",
+            "reportPhase":"%s - Phase %d"
         },
         
         "errorMessages":{

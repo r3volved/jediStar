@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.text.SimpleDateFormat;
 
 import org.apache.http.HttpResponse;
@@ -25,12 +29,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.btobastian.javacord.DiscordAPI;
+import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import fr.jedistar.Main;
 import fr.jedistar.StaticVars;
 import fr.jedistar.classes.Channel;
 import fr.jedistar.classes.TBEventLog;
 import fr.jedistar.classes.Territory;
+import fr.jedistar.commands.TBAssistantCommand;
+import fr.jedistar.formats.CommandAnswer;
 
 public class TerritoryBattleAssistant implements Runnable {
 
@@ -124,7 +131,7 @@ public class TerritoryBattleAssistant implements Runnable {
             		//TB PHASE HAS STARTED, SEND START TRIGGERS
             		logger.debug( "Phase "+eventLog.phase+" started");
             		eventLog.date.add(Calendar.DATE, 1);            		
-            		sendTriggers( eventLog.phase );
+            		sendStartTriggers( eventLog.phase );
             		
             	}
             	
@@ -140,29 +147,65 @@ public class TerritoryBattleAssistant implements Runnable {
 		@Override
 		public void run() {
 
-			sendEndingAlert( eventLog.phase );
+			sendEndingTriggers( eventLog.phase );
 		}
 	}
 	
+	
+/*	public boolean sendStartAlerts( Integer phase ) {
 
-	public boolean sendTriggers( Integer phase ) {
+		
+		CommandAnswer answer = TBAssistantCommand.answer(api,messageParts,receivedMessage,isAdmin);
+		
+		if(answer == null) {
+			return;
+		}
+		
+		String message ="";		
+		if(!"".equals(answer.getMessage())) {
+			message = String.format(MESSAGE, receivedMessage.getAuthor().getMentionTag(),answer.getMessage());
+		}
+		
+		EmbedBuilder embed = answer.getEmbed();
+		
+		if(embed != null) {
+			embed.addField("-","Bot designed by [JediStar](https://jedistar.jimdo.com)", false);
+		}
+		
+		Future<Message> future = receivedMessage.reply(message, embed);
+		
+		if(answer.getReactions() != null && !answer.getReactions().isEmpty()) {
+			Message sentMessage = null;
+			try {
+				sentMessage = future.get(1, TimeUnit.MINUTES);
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				e.printStackTrace();
+				return;
+			}
+							
+			for(String reaction : answer.getReactions()) {
+				try {
+					sentMessage.addUnicodeReaction(reaction).get(1, TimeUnit.MINUTES);
+					Thread.sleep(250);
+				} catch (InterruptedException | ExecutionException | TimeoutException e) {
+					e.printStackTrace();
+					return;
+				}
+			}
+			
+		}
+		
+	}
+	
+*/
+
+	public boolean sendStartTriggers( Integer phase ) {
 		List<Channel> activeChannels = getWebhooks();
-		EmbedBuilder embed = new EmbedBuilder();
-		JSONArray embeds = new JSONArray();
 		JSONObject alert = new JSONObject();
 
-		embed.setTitle("Territory Battle - Phase "+phase+" has started");
-		embed.setDescription("__For more information about this phase, try__:\r\n*%tb info phase "+phase+"*\r\n\r\n__To see progress reports, try__:\r\n*%tba report platoons*\r\n*%tba report cm*\r\n*%tba report sm*");
-		
-		Color eColor = Color.RED;
-		embed.setColor(eColor);
-		embeds.put(embed.toJSONObject());
-
-		
 		String msg = "%tba alert start";
 		alert.put("username", "Territory Battle Assistant");
 		alert.put("content", msg);
-		alert.put("embeds", embeds );
 
 		for( Integer i = 0; i != activeChannels.size(); ++i ) {
 			try { 
@@ -177,7 +220,7 @@ public class TerritoryBattleAssistant implements Runnable {
 		return true;
 	}
 	
-	public boolean sendEndingAlert( Integer phase ) {
+	public boolean sendEndingTriggers( Integer phase ) {
 		List<Channel> activeChannels = getWebhooks();
 		JSONObject alert = new JSONObject();
 
