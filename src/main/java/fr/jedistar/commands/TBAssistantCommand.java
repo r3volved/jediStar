@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
@@ -28,10 +27,8 @@ import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.impl.ImplUser;
 import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.Reaction;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import de.btobastian.javacord.entities.message.impl.ImplReaction;
-
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
 import fr.jedistar.classes.Channel;
@@ -259,6 +256,7 @@ public class TBAssistantCommand implements JediStarBotCommand {
 	@Override
 	public CommandAnswer answer(DiscordAPI api, List<String> params, Message receivedMessage, boolean isAdmin) {
 
+	
 		//Kick out if not enough params
 		if(params.size() == 0) {
 			return new CommandAnswer(ERROR_MESSAGE_PARAMS_NUMBER,null);

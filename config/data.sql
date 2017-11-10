@@ -1,6 +1,7 @@
 INSERT INTO tbEventLog (id, date, phase, tbName) VALUES 
 ('1', '2017-10-23 17:00:00', '0', 'Hoth - Imperial Invasion'),
-('2', '2017-11-02 17:00:00', '0', 'Hoth - Imperial Invasion');
+('2', '2017-11-02 17:00:00', '0', 'Hoth - Imperial Invasion'),
+('3', '2017-11-12 17:00:00', '0', 'Hoth - Imperial Invasion');
 
 
 

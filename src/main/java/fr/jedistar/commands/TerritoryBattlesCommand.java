@@ -11,18 +11,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.commons.lang3.StringUtils;
 
 import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
-import fr.jedistar.classes.Channel;
 import fr.jedistar.classes.Territory;
 import fr.jedistar.commands.helper.GalaticPowerToStars;
 import fr.jedistar.formats.CommandAnswer;

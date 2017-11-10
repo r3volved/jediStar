@@ -3,14 +3,8 @@
  */
 package fr.jedistar.commands;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -20,7 +14,6 @@ import com.vdurmont.emoji.EmojiManager;
 
 import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.embed.Embed;
 import de.btobastian.javacord.entities.message.impl.ImplReaction;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
@@ -168,15 +161,15 @@ public class SetUpCommand implements JediStarBotCommand {
 			return new CommandAnswer(FORBIDDEN, null);
 		}
 		
-		//alert on help
-		if( params.get(0).toLowerCase().equalsIgnoreCase("help") ) {
-			return new CommandAnswer(HELP, null);
-		}
-		
 		//Kick out if not enough params
 		if(params.size() < 2  || params.size() % 2 > 0) {
 			return new CommandAnswer(PARAMS_NUMBER,null);
 		}
+		
+		//alert on help
+		if( params.get(0).toLowerCase().equalsIgnoreCase("help") ) {
+			return new CommandAnswer(HELP, null);
+		}		
 
 		//Kick out if DM
 		if(receivedMessage.getChannelReceiver() == null) {
@@ -319,8 +312,6 @@ public class SetUpCommand implements JediStarBotCommand {
 			if( channel.guildID == 0 ) {
 				return ERROR_NO_GUILD;
 			}
-			
-			logger.info( channel.webhook );
 			
 			if( channel.tbAssistant && channel.webhook == null ) {
 				return ERROR_NO_WEBHOOK;

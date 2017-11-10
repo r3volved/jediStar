@@ -1,17 +1,17 @@
 package fr.jedistar.commands;
 
-import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.entities.message.Message;
-import fr.jedistar.JediStarBotCommand;
-import fr.jedistar.StaticVars;
-import fr.jedistar.classes.Channel;
-import fr.jedistar.exception.HelpParamException;
-import fr.jedistar.formats.CommandAnswer;
+import java.util.List;
+
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import de.btobastian.javacord.DiscordAPI;
+import de.btobastian.javacord.entities.message.Message;
+import fr.jedistar.JediStarBotCommand;
+import fr.jedistar.StaticVars;
+import fr.jedistar.exception.HelpParamException;
+import fr.jedistar.formats.CommandAnswer;
 
 public class HelpCommand implements JediStarBotCommand {
 

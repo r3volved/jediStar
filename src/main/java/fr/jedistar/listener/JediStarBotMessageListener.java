@@ -15,7 +15,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import fr.jedistar.commands.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,9 +31,11 @@ import de.btobastian.javacord.listener.message.MessageCreateListener;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
 import fr.jedistar.commands.AreneCommand;
+import fr.jedistar.commands.HelpCommand;
 import fr.jedistar.commands.ModsCommand;
 import fr.jedistar.commands.RaidCommand;
 import fr.jedistar.commands.SetUpCommand;
+import fr.jedistar.commands.TBAssistantCommand;
 import fr.jedistar.commands.TerritoryBattlesCommand;
 import fr.jedistar.formats.CommandAnswer;
 
@@ -110,6 +111,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 		}
 	}
 	
+	@Override
 	public void onMessageCreate(DiscordAPI api, Message receivedMessage) {	
 	
 		String messageAsString = receivedMessage.getContent();

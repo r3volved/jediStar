@@ -2,7 +2,6 @@ package fr.jedistar.commands;
 
 import java.awt.Color;
 import java.util.Collections;
-
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -16,7 +15,6 @@ import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.StaticVars;
-import fr.jedistar.classes.Channel;
 import fr.jedistar.formats.CommandAnswer;
 
 public class AreneCommand implements JediStarBotCommand {

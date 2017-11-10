@@ -5,13 +5,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.text.SimpleDateFormat;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -23,16 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
-import fr.jedistar.JediStarBotCommand;
 import fr.jedistar.Main;
 import fr.jedistar.StaticVars;
 import fr.jedistar.classes.Channel;
 import fr.jedistar.classes.TBEventLog;
 import fr.jedistar.classes.Territory;
-import fr.jedistar.commands.TBAssistantCommand;
-import fr.jedistar.formats.CommandAnswer;
 
 public class TerritoryBattleAssistant implements Runnable {
 
@@ -58,6 +53,7 @@ public class TerritoryBattleAssistant implements Runnable {
 
 	}
 	
+	@Override
 	public void run() {
 	
 		try {

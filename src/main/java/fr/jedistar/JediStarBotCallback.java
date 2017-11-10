@@ -4,8 +4,8 @@ import com.google.common.util.concurrent.FutureCallback;
 
 import de.btobastian.javacord.DiscordAPI;
 import fr.jedistar.listener.JediStarBotMessageListener;
-import fr.jedistar.listener.JediStarBotReactionAddListener;
 import fr.jedistar.listener.JediStarBotMultiReactionAddListener;
+import fr.jedistar.listener.JediStarBotReactionAddListener;
 
 public class JediStarBotCallback implements FutureCallback<DiscordAPI> {
 
@@ -21,11 +21,13 @@ public class JediStarBotCallback implements FutureCallback<DiscordAPI> {
 		multiReactionListener = new JediStarBotMultiReactionAddListener();
 	}
 	
+	@Override
 	public void onFailure(Throwable t) {
 		t.printStackTrace();
 
 	}
 
+	@Override
 	public void onSuccess(DiscordAPI api) {
 		
 		api.registerListener(messageListener);

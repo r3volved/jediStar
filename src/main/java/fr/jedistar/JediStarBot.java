@@ -1,10 +1,7 @@
 package fr.jedistar;
 
 import de.btobastian.javacord.DiscordAPI;
-import de.btobastian.javacord.ImplDiscordAPI;
 import de.btobastian.javacord.Javacord;
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.impl.ImplUser;
 import fr.jedistar.utils.TerritoryBattleAssistant;
 
 

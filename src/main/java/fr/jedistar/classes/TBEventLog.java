@@ -136,7 +136,7 @@ public class TBEventLog {
 	    	Calendar today = Calendar.getInstance(eventTimeZone);
 	    	
 	    	/* SET TEST today */
-	    	today.add(Calendar.DAY_OF_YEAR, 7);
+	    	//today.add(Calendar.DAY_OF_YEAR, 7);
 	    	//today.set(Calendar.HOUR, 17);
 	    	//today.set(Calendar.MINUTE, 0);
 	    	//today.set(Calendar.SECOND, 0);

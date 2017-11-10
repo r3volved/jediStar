@@ -8,12 +8,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,16 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.btobastian.javacord.DiscordAPI;
-//import de.btobastian.javacord.entities.Channel;
-import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import fr.jedistar.JediStarBotCommand;
-import fr.jedistar.Main;
 import fr.jedistar.StaticVars;
 import fr.jedistar.formats.CommandAnswer;
 import fr.jedistar.utils.JaroWinklerDistance;
-import fr.jedistar.classes.Channel;
 
 
 public class ModsCommand implements JediStarBotCommand {

@@ -3,26 +3,20 @@ package fr.jedistar.commands;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.btobastian.javacord.DiscordAPI;
-//import de.btobastian.javacord.entities.Channel;
-import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Message;
 import fr.jedistar.JediStarBotCommand;
-import fr.jedistar.Main;
 import fr.jedistar.StaticVars;
 import fr.jedistar.formats.CommandAnswer;
-import fr.jedistar.classes.Channel;
 
 public class RaidCommand implements JediStarBotCommand {
 	

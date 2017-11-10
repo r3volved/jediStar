@@ -11,8 +11,8 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.jedistar.commands.SetUpCommand;
 import fr.jedistar.StaticVars;
+import fr.jedistar.commands.SetUpCommand;
 
 /**
  * @author Nathan
