@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.btobastian.javacord.DiscordAPI;
+import de.btobastian.javacord.entities.Channel;
 import de.btobastian.javacord.entities.Server;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.message.Message;
@@ -33,6 +34,7 @@ import fr.jedistar.StaticVars;
 import fr.jedistar.commands.AreneCommand;
 import fr.jedistar.commands.HelpCommand;
 import fr.jedistar.commands.ModsCommand;
+import fr.jedistar.commands.PayoutCommand;
 import fr.jedistar.commands.RaidCommand;
 import fr.jedistar.commands.SetUpCommand;
 import fr.jedistar.commands.TBAssistantCommand;
@@ -62,7 +64,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 	
 	public JediStarBotMessageListener() {
 		super();
-				
+
 		commandsMap = new HashMap<String,JediStarBotCommand>();
 		
 		//AJOUTER ICI DE NOUVELLES COMMANDES
@@ -73,6 +75,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 		TerritoryBattlesCommand tb = new TerritoryBattlesCommand();
 		TBAssistantCommand tba = new TBAssistantCommand();
         HelpCommand help = new HelpCommand();
+        PayoutCommand payout = new PayoutCommand();
 
 		commandsMap.put(raid.getCommand(), raid);
 		commandsMap.put(mods.getCommand(), mods);
@@ -81,6 +84,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 		commandsMap.put(tb.getCommand(), tb);
 		commandsMap.put(tba.getCommand(), tba);
         commandsMap.put(help.getCommand(), help);
+        commandsMap.put(payout.getCommand(), payout);
 
 		//Lecture du Json
 		try {
@@ -120,7 +124,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 		//logger.info( "Is me?: "+receivedMessage.getAuthor().isYourself() );
 		
 		if( receivedMessage.getAuthor().isYourself() ) { return; }
-		
+
 		//Si le message est vide ou ne commence pas par % : Ne rien faire.
 		if(messageAsString == null || !messageAsString.startsWith(PREFIXE_COMMANDES)) {
 			return;

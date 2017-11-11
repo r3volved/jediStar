@@ -4,7 +4,6 @@ import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.Javacord;
 import fr.jedistar.utils.TerritoryBattleAssistant;
 
-
 public class JediStarBot {
 
 	String token;
@@ -30,7 +29,6 @@ public class JediStarBot {
 
 	    tba.start(api);
 	    
-	}
-	
+	}	
 
 }

@@ -22,13 +22,17 @@ public class AreneCommand implements JediStarBotCommand {
 	final static Logger logger = LoggerFactory.getLogger(JediStarBotCommand.class);
 	
 	private static final SortedMap<Integer, Integer> attackRangeMap = Collections.unmodifiableSortedMap(
-		    new TreeMap<Integer, Integer>() {{
+		    new TreeMap<Integer, Integer>() {
+
+				private static final long serialVersionUID = 4607362140163522483L;
+
+			{
 		        put(12, 4);
 		        put(18, 5);
 		        put(24, 6);
-		        put(33, 7);
-		        put(44, 8);
-		        put(54, 9);
+		        put(32, 7);
+		        put(40, 8);
+		        put(55, 9);
 		    }});
 	
 	private final static Color EMBED_COLOR = Color.WHITE;
@@ -156,7 +160,7 @@ public class AreneCommand implements JediStarBotCommand {
 		SortedMap<Integer, Integer> reachableRank = attackRangeMap.tailMap(rank);
 		if(reachableRank.isEmpty())
 		{
-			newRank = (int) Math.round(rank*0.85);
+			newRank = (int) Math.round(rank*0.85) -1 ;
 			if(newRank < attackRangeMap.get(attackRangeMap.lastKey()))
 			{
 				newRank =attackRangeMap.get(attackRangeMap.lastKey())+1;
