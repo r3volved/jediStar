@@ -215,7 +215,7 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 				if(CharacterGP == -1 || ShipGP == -1) {
 					return new CommandAnswer(ERROR_MESSAGE_SQL, null);
 				}
-				
+					
 				GalaticPowerToStars strat = new GalaticPowerToStars(CharacterGP,ShipGP);
 				Integer starFromAir = strat.starFromShip;
 				Integer starFromGround =strat.starFromCharacter;
@@ -229,8 +229,11 @@ public class TerritoryBattlesCommand implements JediStarBotCommand {
 					strategyText =strat.minStrategy;
 					title =MIN_STARS_FROM_GP_TITLE;
 				}
+	
 				String result = String.format(MAX_STARS_FROM_GP,StringFormating.formatNumber(CharacterGP), StringFormating.formatNumber(ShipGP),StringFormating.formatNumber(ShipGP+CharacterGP),starFromAir,starFromGround,starFromAir+starFromGround)+strategyText;
 				embed.addField(title, result, true);
+				
+				logger.info( "GOT HERE" );
 				return new CommandAnswer(null,embed);
 				
 			}

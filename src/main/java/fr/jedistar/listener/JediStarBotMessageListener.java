@@ -173,7 +173,7 @@ public class JediStarBotMessageListener implements MessageCreateListener {
 		}
 		
 		String message ="";		
-		if(!"".equals(answer.getMessage())) {
+		if(answer.getMessage() != null && !"".equals(answer.getMessage())) {
 			message = String.format(MESSAGE, receivedMessage.getAuthor().getMentionTag(),answer.getMessage());
 		}
 		

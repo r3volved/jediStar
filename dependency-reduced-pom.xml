@@ -3,11 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.jedistar</groupId>
   <artifactId>JediStarBot</artifactId>
-<<<<<<< HEAD
-  <version>7.3</version>
-=======
-  <version>8.0.2</version>
->>>>>>> upstream/master
+  <version>8.1.0</version>
   <build>
     <plugins>
       <plugin>
